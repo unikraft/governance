@@ -192,10 +192,9 @@ func main() {
     os.Exit(1)
   }
 
-  team := &Team{}
-
   // Iterate through all files and populate a list of known teams.
   for _, file := range files {
+    team := &Team{}
     err = team.Parse(path.Join(teamsDir, file.Name()))
     if err != nil {
       log.Fatalf("could not parse teams file: %s", err)
