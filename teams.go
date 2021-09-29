@@ -101,6 +101,7 @@ type Team struct {
   Name           string     `yaml:"name,omitempty"`
   Type           TeamType   `yaml:"type,omitempty"`
   Parent         string     `yaml:"parent,omitempty"`
+  parentTeam    *Team       // private reference to parent team
   Description    string     `yaml:"description,omitempty"`
   CodeReview     CodeReview `yaml:"code_review,omitempty"`
   Members      []User       `yaml:"members,omitempty"`
@@ -111,6 +112,16 @@ var (
   gh      *github.GithubClient
   teams []*Team
 )
+
+func findTeamByName(a string) *Team {
+  for _, b := range teams {
+    if b.Name == a {
+      return b
+    }
+  }
+
+  return nil
+}
 
 func (t *Team) Parse(path string) error {
   yamlFile, err := ioutil.ReadFile(path)
@@ -129,6 +140,10 @@ func (t *Team) Parse(path string) error {
     return fmt.Errorf("team name not provided for %s", path)
   }
 
+  return nil
+}
+
+func (t *Team) Sync() error {
   return nil
 }
 
@@ -192,6 +207,11 @@ func main() {
     os.Exit(1)
   }
 
+  // To solve a potential dependency problem where teams are dependent on teams
+  // which do not exist, we are going to populate a list "processed" teams first
+  // and then check if any of the teams has a parent which does not exist in the
+  // list which we have just populated.
+
   // Iterate through all files and populate a list of known teams.
   for _, file := range files {
     team := &Team{}
@@ -201,5 +221,29 @@ func main() {
     }
 
     teams = append(teams, team)
+  }
+
+  // Now iterate through known teams and match parents
+  for _, team := range teams {
+    if team.Parent != "" {
+      parent := findTeamByName(team.Parent)
+      if parent != nil {
+        team.parentTeam = parent
+        break
+      } else {
+        // We might be lucky... it may exist upstream when we later call the
+        // Github API.  If it doesn't then we're in trouble...
+        log.Printf("warning: cannot find parent from provided teams: %s", team.Parent)
+      }
+    }
+  }
+
+  // Finally, synchronise all teams now that we have linked relevant teams
+  for _, team := range teams {
+    err = team.Sync()
+    if err != nil {
+      log.Fatalf("could not syncronise team: %s: %s", team.Name, err)
+      os.Exit(1)
+    }
   }
 }
