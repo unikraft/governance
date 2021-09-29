@@ -1,0 +1,15 @@
+name: sig-fs
+description: Unikraft Filesystems Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Marc Rittinghaus
+    github: marcrittinghaus
+  - name: Simon Kuenzer
+    github: skuenzer
+
+reviewers:
+  - name: Marco Schlumpp
+    github: mschlumpp
+  - name: Dragoș Argint
+    github: dragosargint

@@ -1,0 +1,17 @@
+name: sig-build
+description: Unikraft Build System Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Alexander Jung
+    github: nderjung
+  - name: Simon Kuenzer
+    github: skuenzer
+
+reviewers:
+  - name: Cezar Craciunoiu
+    github: craciunoiuc
+  - name: Adina Smeu
+    github: adinasm
+  - name: Vlad-Andrei Bădoiu
+    github: vladandrew

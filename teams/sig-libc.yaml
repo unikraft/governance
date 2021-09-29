@@ -1,0 +1,15 @@
+name: sig-libc
+description: Unikraft Standard Library (libc) Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Cyril Soldani
+    github: cffs
+  - name: Gaulthier Gain
+    github: gaulthiergain
+
+reviewers:
+  - name: Dragoș Argint
+    github: dragosargint
+  - name: Sergiu Moga
+    github: mogasergiu

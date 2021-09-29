@@ -1,0 +1,11 @@
+name: sig-test
+description: Unikraft Testing Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Alexander Jung
+    github: nderjung
+
+reviewers:
+  - name: Daniel Dinca
+    github: danield20

@@ -1,0 +1,15 @@
+name: sig-sched
+description: Unikraft Schedulers Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Simon Kuenzer
+    github: skuenzer
+
+reviewers:
+  - name: Sergiu Moga
+    github: mogasergiu
+  - name: Dragoș Argint
+    github: dragosargint
+  - name: Daniel Dincă
+    github: danield20

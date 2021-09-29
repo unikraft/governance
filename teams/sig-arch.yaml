@@ -1,0 +1,9 @@
+name: sig-arch
+description: Unikraft Architectures Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Simon Kuenzer
+    github: skuenzer
+  - name: Marc Rittinghaus
+    github: marcrittinghaus

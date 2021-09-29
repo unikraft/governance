@@ -1,0 +1,17 @@
+name: sig-plat-kvm
+description: Unikraft KVM Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Vlad-Andrei Bădoiu
+    github: vladandrew
+  - name: Simon Kuenzer
+    github: skuenzer
+
+reviewers:
+  - name: Cristian Vijelie
+    github: cristian-vijelie
+  - name: Sergiu Moga
+    github: mogasergiu
+  - name: Gabriel Mocanu
+    github: gabrielmocanu

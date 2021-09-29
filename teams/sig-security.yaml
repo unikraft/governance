@@ -1,0 +1,13 @@
+name: sig-security
+description: Unikraft Security Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Hugo Lefeuvre
+    github: hlef
+  - name: Vlad-Andrei Bădoiu
+    github: vladandrew
+
+reviewers:
+  - name: Daniel Dincă
+    github: danield20

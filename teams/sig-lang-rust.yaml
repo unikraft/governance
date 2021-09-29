@@ -1,0 +1,15 @@
+name: sig-lang-rust
+description: Unikraft Rust Language Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Vlad-Andrei Bădoiu
+    github: vladandrew
+
+reviewers:
+  - name: Cyril Soldani
+    github: cffs
+  - name: Gaulthier Gain
+    github: gaulthiergain
+  - name: Dennis Kobert
+    github: TrueDoctor

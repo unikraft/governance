@@ -1,0 +1,13 @@
+name: sig-api
+description: Unikraft APIs Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Simon Kuenzer
+    github: skuenzer
+  - name: Marc Rittinghaus
+    github: marcrittinghaus
+
+reviewers:
+  - name: Vlad-Andrei Bădoiu
+    github: vladandrew

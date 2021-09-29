@@ -1,0 +1,17 @@
+name: sig-net
+description: Unikraft Networking Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Simon Kuenzer
+    github: skuenzer
+  - name: Alexander Jung
+    github: nderjung
+
+reviewers:
+  - name: Vlad-Andrei Bădoiu
+    github: vladandrew
+  - name: Costin Lupu
+    github: clupuishere
+  - name: Hugo Lefeuvre
+    github: hlef

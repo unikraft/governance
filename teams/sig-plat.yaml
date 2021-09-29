@@ -1,0 +1,13 @@
+name: sig-plat
+description: Unikraft Platforms Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Simon Kuenzer
+    github: skuenzer
+  - name: Marc Rittinghaus
+    github: marcrittinghaus
+
+reviewers:
+  - name: Daniel Dincă
+    github: danield20

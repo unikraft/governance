@@ -1,0 +1,13 @@
+name: sig-mem
+description: Unikraft Memory Management Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Hugo Lefeuvre
+    github: hlef
+  - name: Marc Rittinghaus
+    github: marcrittinghaus
+
+reviewers:
+  - name: Cezar Craciunoiu
+    github: craciunoiuc
