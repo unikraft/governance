@@ -209,40 +209,40 @@ func (t *Team) Sync() error {
     }
   }
 
-  log.Printf("%#v", parentGithubTeam)
-
   log.Printf("Synchronising @%s/%s...", gh.Org, t.Name)
 
+  var maintainers []string
+  var repos []string
+
+  for _, maintainer := range t.Maintainers {
+    maintainers = append(maintainers, maintainer.Github)
+  }
+
+  for _, repo := range t.Repositories {
+    repos = append(repos, repo.Name)
+  }
+
+  // Github's Go api is a bit stupid...
+  p := string(t.Privacy)
+  var parentTeamID int64
+
+  if parentGithubTeam != nil {
+    parentTeamID = *parentGithubTeam.ID
+  } else {
+    parentTeamID = -1
+  }
+
   // Check if the team already exists, if it does not, we must create it
-  githubTeam, err = gh.FindTeam(gh.Org, t.Name)
+  githubTeam, err = gh.CreateOrUpdateTeam(
+    t.Name,
+    t.Description,
+    parentTeamID,
+    &p,
+    maintainers,
+    repos,
+  )
   if err != nil {
-    log.Printf(" >>> creating new team...")
-
-    var maintainers []string
-    var repos []string
-
-    for _, maintainer := range t.Maintainers {
-      maintainers = append(maintainers, maintainer.Github)
-    }
-
-    for _, repo := range t.Repositories {
-      repos = append(repos, repo.Name)
-    }
-
-    // Github's Go api is a bit stupid...
-    p := string(t.Privacy)
-
-    githubTeam, err = gh.CreateTeam(
-      t.Name,
-      t.Description,
-      &p,
-      maintainers,
-      repos,
-    )
-
-    if err != nil {
-      return fmt.Errorf("could not create team: %s", err)
-    }
+    return fmt.Errorf("could not create or update team: %s", err)
   }
 
   t.hasSynced = true
