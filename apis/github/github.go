@@ -50,6 +50,7 @@ type GithubClient struct {
 
 // Github interface representing the desired functions for this resource.
 type Github interface {
+  FindTeam(org string, team string) (*github.Team, error)
 }
 
 // NewGitHubClient for creating a new instance of the client.
@@ -99,4 +100,31 @@ func NewGithubClient(org string, accessToken string, skipSSL bool, githubEndpoin
     Org:    org,
     Client: client,
   }, nil
+}
+
+// FindTeam takes an organization name and team name and returns a detailed
+// struct with information about the team.
+func (c *GithubClient) FindTeam(org string, team string) (*github.Team, error) {
+	opts := &github.ListOptions{}
+
+	for {
+		teams, resp, err := c.Client.Teams.ListTeams(context.TODO(), org, opts)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, t := range teams {
+			if t.GetName() == team {
+				return t, nil
+			}
+		}
+
+		if resp.NextPage == 0 {
+			break
+		}
+
+		opts.Page = resp.NextPage
+	}
+
+  return nil, fmt.Errorf("could not find team: @%s/%s", org, team)
 }
