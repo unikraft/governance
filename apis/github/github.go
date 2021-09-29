@@ -128,3 +128,28 @@ func (c *GithubClient) FindTeam(org string, team string) (*github.Team, error) {
 
   return nil, fmt.Errorf("could not find team: @%s/%s", org, team)
 }
+
+func (c *GithubClient) CreateTeam(name, description string, privacy *string, maintainers, repos []string) (*github.Team, error) {
+  newTeam := github.NewTeam{
+    Name:        name,
+    Description: &description,
+    Maintainers: maintainers,
+    RepoNames:   repos,
+  }
+
+  if privacy != nil {
+    newTeam.Privacy = privacy
+  }
+
+	team, _, err := c.Client.Teams.CreateTeam(
+		context.TODO(),
+		c.Org,
+		newTeam,
+	)
+
+  if err != nil {
+    return nil, err
+  }
+
+  return team, nil
+}

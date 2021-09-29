@@ -34,10 +34,12 @@ import (
   "fmt"
   "log"
   "path"
+  "strings"
   "io/ioutil"
 
   "gopkg.in/yaml.v2"
 
+  ghApi "github.com/google/go-github/v32/github"
   "github.com/unikraft/governance/apis/github"
 )
 
@@ -97,17 +99,26 @@ const (
   MiscTeam        TeamType = "misc"
 )
 
+type TeamPrivacy string
+
+const (
+  TeamClosed TeamPrivacy = "closed"
+  TeamSecret TeamPrivacy = "secret"
+)
+
 type Team struct {
-  Name           string     `yaml:"name,omitempty"`
-  Type           TeamType   `yaml:"type,omitempty"`
-  Parent         string     `yaml:"parent,omitempty"`
-  parentTeam    *Team       // private reference to parent team
-  Description    string     `yaml:"description,omitempty"`
-  CodeReview     CodeReview `yaml:"code_review,omitempty"`
-  Maintainers  []User       `yaml:"maintainers,omitempty"`
-  Reviewers    []User       `yaml:"reviewers,omitempty"`
-  Members      []User       `yaml:"members,omitempty"`
-  Repositories []Repository `yaml:"repositories,omitempty"`
+  Name           string      `yaml:"name,omitempty"`
+  Type           TeamType    `yaml:"type,omitempty"`
+  Privacy        TeamPrivacy `yaml:"privacy,omitempty"`
+  Parent         string      `yaml:"parent,omitempty"`
+  parentTeam    *Team        // private reference to parent team
+  Description    string      `yaml:"description,omitempty"`
+  CodeReview     CodeReview  `yaml:"code_review,omitempty"`
+  Maintainers  []User        `yaml:"maintainers,omitempty"`
+  Reviewers    []User        `yaml:"reviewers,omitempty"`
+  Members      []User        `yaml:"members,omitempty"`
+  Repositories []Repository  `yaml:"repositories,omitempty"`
+  hasSynced      bool
 }
 
 var (
@@ -156,6 +167,85 @@ func (t *Team) Parse(path string) error {
 }
 
 func (t *Team) Sync() error {
+  if t.hasSynced {
+    return nil
+  }
+
+  var err error
+  t.hasSynced = false
+
+  // Determine the team type if unset
+  if t.Type == "" {
+    for _, prefix := range []TeamType{SIGTeam, MaintainersTeam, ReviewersTeam} {
+      if strings.HasPrefix(t.Name, string(prefix)) {
+        t.Type = prefix
+        break
+      }
+    }
+
+    // If the type is still unset...
+    if t.Type == "" {
+      t.Type = MiscTeam
+    }
+  }
+
+  var githubTeam *ghApi.Team
+  var parentGithubTeam *ghApi.Team
+
+  // Check if the parent exists.  Note, we may have a dependency problem here.
+  if t.Parent != "" {
+    if t.parentTeam != nil {
+      // Synchronise the parent now so that information for the child is correct
+      // and up-to-date.
+      err = t.parentTeam.Sync()
+      if err != nil {
+        return fmt.Errorf("could not synchronize parent: %s", err)
+      }
+    }
+
+    parentGithubTeam, err = gh.FindTeam(gh.Org, t.Parent)
+    if err != nil {
+      return err
+    }
+  }
+
+  log.Printf("%#v", parentGithubTeam)
+
+  log.Printf("Synchronising @%s/%s...", gh.Org, t.Name)
+
+  // Check if the team already exists, if it does not, we must create it
+  githubTeam, err = gh.FindTeam(gh.Org, t.Name)
+  if err != nil {
+    log.Printf(" >>> creating new team...")
+
+    var maintainers []string
+    var repos []string
+
+    for _, maintainer := range t.Maintainers {
+      maintainers = append(maintainers, maintainer.Github)
+    }
+
+    for _, repo := range t.Repositories {
+      repos = append(repos, repo.Name)
+    }
+
+    // Github's Go api is a bit stupid...
+    p := string(t.Privacy)
+
+    githubTeam, err = gh.CreateTeam(
+      t.Name,
+      t.Description,
+      &p,
+      maintainers,
+      repos,
+    )
+
+    if err != nil {
+      return fmt.Errorf("could not create team: %s", err)
+    }
+  }
+
+  t.hasSynced = true
   return nil
 }
 
