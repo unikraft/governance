@@ -199,5 +199,7 @@ func main() {
     if err != nil {
       log.Fatalf("could not parse teams file: %s", err)
     }
+
+    teams = append(teams, team)
   }
 }
