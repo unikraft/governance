@@ -29,3 +29,69 @@ package main
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+
+type UserRole string
+
+const (
+  Maintainer UserRole = "maintainer"
+  Member     UserRole = "member"
+)
+
+type User struct {
+  Name    string   `yaml:"name,omitempty"`
+  Email   string   `yaml:"email,omitempty"`
+  Github  string   `yaml:"github,omitempty"`
+  Discord string   `yaml:"discord,omitempty"`
+  Role    UserRole `yaml:"role,omitempty"`
+}
+
+type CodeReviewAlgorithm string
+
+const (
+  RoundRobin  CodeReviewAlgorithm = "rr"
+  LoadBalance CodeReviewAlgorithm = "lb"
+)
+
+type CodeReview struct {
+  NumReviewers           int                 `yaml:"num_reviewers,omitempty"`
+  Algorithm              CodeReviewAlgorithm `yaml:"algorithm,omitempty"`
+  NeverAssign          []User                `yaml:"never_assign,omitempty"`
+  DontNotifyTeam         bool                `yaml:"dont_notify_team,omitempty"`
+  IncludeChildTeams      bool                `yaml:"include_child_teams,omitempty"`
+  RemoveReviewRequest    bool                `yaml:"remove_review_request,omitempty"`
+  CountExistingMembers   bool                `yaml:"count_existing_members,omitempty"`
+}
+
+type PermissionLevel string
+
+const (
+  PermissionRead     PermissionLevel = "read"
+  PermissionTriage   PermissionLevel = "triage"
+  PermissionWrite    PermissionLevel = "write"
+  PermissionMaintain PermissionLevel = "maintain"
+  PermissionAdmin    PermissionLevel = "admin"
+)
+
+type Repository struct {
+  Name            string          `yaml:"name,omitempty"`
+  PermissionLevel PermissionLevel `yaml:"permission,omitempty"`
+}
+
+type TeamType string
+
+const (
+  SIGTeam         TeamType = "sig"
+  MaintainersTeam TeamType = "maintainers"
+  ReviewersTeam   TeamType = "reviewers"
+  MiscTeam        TeamType = "misc"
+)
+
+type Team struct {
+  Name           string     `yaml:"name,omitempty"`
+  Type           TeamType   `yaml:"type,omitempty"`
+  Parent         string     `yaml:"parent,omitempty"`
+  Description    string     `yaml:"description,omitempty"`
+  CodeReview     CodeReview `yaml:"code_review,omitempty"`
+  Members      []User       `yaml:"members,omitempty"`
+  Repositories []Repository `yaml:"repositories,omitempty"`
+}
