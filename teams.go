@@ -29,6 +29,15 @@ package main
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+import (
+  "os"
+  "fmt"
+  "log"
+  "path"
+  "io/ioutil"
+
+  "gopkg.in/yaml.v2"
+)
 
 type UserRole string
 
@@ -94,4 +103,58 @@ type Team struct {
   CodeReview     CodeReview `yaml:"code_review,omitempty"`
   Members      []User       `yaml:"members,omitempty"`
   Repositories []Repository `yaml:"repositories,omitempty"`
+}
+
+var (
+  teams []*Team
+)
+
+func (t *Team) Parse(path string) error {
+  yamlFile, err := ioutil.ReadFile(path)
+  if err != nil {
+    return fmt.Errorf("could not open yaml file: %s", err)
+  }
+
+  err = yaml.Unmarshal(yamlFile, t)
+  if err != nil {
+    return fmt.Errorf("could not unmarshal yaml file: %s", err)
+  }
+
+  // Let's perform a sanity check and check if we have at least the name of the
+  // team.
+  if t.Name == "" {
+    return fmt.Errorf("team name not provided for %s", path)
+  }
+
+  return nil
+}
+
+func main() {
+  var err error
+  teamsDir := "./teams"
+
+  if len(os.Args) > 1 {
+    teamsDir = os.Args[1]
+  }
+
+  if _, err := os.Stat(teamsDir); os.IsNotExist(err) {
+    log.Fatalf("could not read find teams directory: %s", err)
+    os.Exit(1)
+  }
+
+  files, err := ioutil.ReadDir(teamsDir)
+  if err != nil {
+    log.Fatalf("could not read directory: %s", err)
+    os.Exit(1)
+  }
+
+  team := &Team{}
+
+  // Iterate through all files and populate a list of known teams.
+  for _, file := range files {
+    err = team.Parse(path.Join(teamsDir, file.Name()))
+    if err != nil {
+      log.Fatalf("could not parse teams file: %s", err)
+    }
+  }
 }
