@@ -1,0 +1,13 @@
+name: sig-plat-xen
+description: Unikraft Xen Hypervisor Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Simon Kuenzer
+    github: skuenzer
+
+reviewers:
+  - name: Costin Lupu
+    github: clupuishere
+  - name: Gabriel Mocanu
+    github: gabrielmocanu

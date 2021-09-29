@@ -1,0 +1,17 @@
+name: sig-lang
+description: Unikraft Language Runtimes Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Marc Rittinghaus
+    github: marcrittinghaus
+  - name: Vlad-Andrei Bădoiu
+    github: vladandrew
+
+reviewers:
+  - name: Răzvan Deaconescu
+    github: razvand
+  - name: Cristian Baciu
+    github: CristiBM
+  - name: Cyril Soldani
+    github: cffs

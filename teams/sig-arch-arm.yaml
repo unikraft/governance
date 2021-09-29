@@ -1,0 +1,19 @@
+name: sig-arch-arm
+description: Unikraft ARM Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Marc Rittinghaus
+    github: marcrittinghaus
+  - name: Michalis Pappas
+    github: michpappas
+
+reviewers:
+  - name: Răzvan Vîrtan
+    github: razvanvirtan
+  - name: Renê de Souza Pinto
+    github: rene
+  - name: Jia He
+    github: justin-he
+  - name: Jianyong Wu
+    github: jongwu

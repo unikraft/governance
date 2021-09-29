@@ -1,0 +1,15 @@
+name: sig-core
+description: Unikraft Core Team
+privacy: closed
+
+maintainers:
+  - name: Simon Kuenzer
+    github: skuenzer
+  - name: Alexander Jung
+    github: nderjung
+  - name: Felipe Huici
+    github: felipehuici
+  - name: Răzvan Deaconescu
+    github: razvand
+  - name: Marc Rittinghaus
+    github: marcrittinghaus

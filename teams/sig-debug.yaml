@@ -1,0 +1,13 @@
+name: sig-debug
+description: Unikraft Debug Tools Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Marc Rittinghaus
+    github: marcrittinghaus
+  - name: Simon Kuenzer
+    github: skuenzer
+
+reviewers:
+  - name: Vlad-Andrei Bădoiu
+    github: vladandrew

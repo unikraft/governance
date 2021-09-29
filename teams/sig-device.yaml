@@ -1,0 +1,15 @@
+name: sig-device
+description: Unikraft Device Drivers Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Simon Kuenzer
+    github: skuenzer
+  - name: Marc Rittinghaus
+    github: marcrittinghaus
+
+reviewers:
+  - name: Andreea Dumitrache
+    github: andreeaDumitrache29
+  - name: Răzvan Vîrtan
+    github: razvanvirtan

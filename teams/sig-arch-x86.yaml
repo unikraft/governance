@@ -1,0 +1,15 @@
+name: sig-arch-x86
+description: Unikraft Intel x86 Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Marc Rittinghaus
+    github: marcrittinghaus
+
+reviewers:
+  - name: Vlad-Andrei Badoiu
+    github: vladandrew
+  - name: Cristian Vijelie
+    github: cristian-vijelie
+  - name: Cyril Soldani
+    github: cffs

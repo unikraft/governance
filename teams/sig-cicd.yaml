@@ -1,0 +1,13 @@
+name: sig-cicd
+description: Unikraft CI/CD Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Alexander Jung
+    github: nderjung
+
+reviewers:
+  - name: Gabriel Mocanu
+    github: gabrielmocanu
+  - name: Cristian Vijelie
+    github: cristian-vijelie

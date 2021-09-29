@@ -1,0 +1,15 @@
+name: sig-plat-linuxu
+description: Unikraft Linux Userspace Special Interest Group
+privacy: closed
+
+maintainers:
+  - name: Vlad-Andrei Bădoiu
+    github: vladandrew
+  - name: Răzvan Deaconescu
+    github: razvand
+
+reviewers:
+  - name: Sergiu Moga
+    github: mogasergiu
+  - name: Daniel Dincă
+    github: danield20
