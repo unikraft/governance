@@ -142,6 +142,16 @@ func (t *Team) Parse(path string) error {
     return fmt.Errorf("team name not provided for %s", path)
   }
 
+  // Now let's check if all maintainers, reviewers and members have at least
+  // their Github username provided.
+  users := append(t.Maintainers, t.Reviewers...)
+  users = append(users, t.Members...)
+  for _, user := range users {
+    if user.Github == "" {
+      return fmt.Errorf("user does not have github username: %s", user.Name)
+    }
+  }
+
   return nil
 }
 
