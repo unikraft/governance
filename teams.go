@@ -37,6 +37,8 @@ import (
   "io/ioutil"
 
   "gopkg.in/yaml.v2"
+
+  "github.com/unikraft/governance/apis/github"
 )
 
 type UserRole string
@@ -106,6 +108,7 @@ type Team struct {
 }
 
 var (
+  gh      *github.GithubClient
   teams []*Team
 )
 
@@ -129,6 +132,41 @@ func (t *Team) Parse(path string) error {
   return nil
 }
 
+func setupGithubClient() error {
+  var err error
+
+  githubOrg := os.Getenv("GITHUB_ORG")
+  if githubOrg == "" {
+    return fmt.Errorf("GITHUB_ORG not set")
+  }
+
+  githubToken := os.Getenv("GITHUB_TOKEN")
+  if githubToken == "" {
+    return fmt.Errorf("GITHUB_TOKEN token not set")
+  }
+
+  var githubSkipSSL bool
+  if os.Getenv("GITHUB_SKIP_SSL") == "true" {
+    githubSkipSSL = true
+  } else {
+    githubSkipSSL = false
+  }
+
+  githubEndpoint := os.Getenv("GITHUB_ENDPOINT")
+
+  gh, err = github.NewGithubClient(
+    githubOrg,
+    githubToken,
+    githubSkipSSL,
+    githubEndpoint,
+  )
+  if err != nil {
+    return fmt.Errorf("could not create github client: %s", err)
+  }
+
+  return nil
+}
+
 func main() {
   var err error
   teamsDir := "./teams"
@@ -145,6 +183,12 @@ func main() {
   files, err := ioutil.ReadDir(teamsDir)
   if err != nil {
     log.Fatalf("could not read directory: %s", err)
+    os.Exit(1)
+  }
+
+  err = setupGithubClient()
+  if err != nil {
+    log.Fatalf("could not setup github client: %s", err)
     os.Exit(1)
   }
 

@@ -1,0 +1,102 @@
+// SPDX-License-Identifier: BSD-3-Clause
+//
+// Authors: Alexander Jung <a.jung@lancs.ac.uk>
+//
+// Copyright (c) 2021, Lancaster University.  All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+//
+// 1. Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+// 3. Neither the name of the copyright holder nor the names of its
+//    contributors may be used to endorse or promote products derived from
+//    this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+package github
+
+import (
+  "fmt"
+  "context"
+  "net/url"
+  "net/http"
+  "crypto/tls"
+
+  "golang.org/x/oauth2"
+  "github.com/google/go-github/v32/github"
+)
+
+// GithubClient containing the necessary information to authenticate and perform
+// actions against the REST API.
+type GithubClient struct {
+  Org      string
+  Client  *github.Client
+}
+
+// Github interface representing the desired functions for this resource.
+type Github interface {
+}
+
+// NewGitHubClient for creating a new instance of the client.
+func NewGithubClient(org string, accessToken string, skipSSL bool, githubEndpoint string) (*GithubClient, error) {
+  var ctx context.Context
+
+  if skipSSL {
+    insecureClient := &http.Client{
+      Transport: &http.Transport{
+        TLSClientConfig: &tls.Config{
+          InsecureSkipVerify: true,
+        },
+      },
+    }
+
+    ctx = context.WithValue(context.TODO(), oauth2.HTTPClient, insecureClient)
+  } else {
+    ctx = context.TODO()
+  }
+
+  var client *github.Client
+  oauth2Client := oauth2.NewClient(ctx, oauth2.StaticTokenSource(
+    &oauth2.Token{
+      AccessToken: accessToken,
+    },
+  ))
+
+  if githubEndpoint != "" {
+    endpoint, err := url.Parse(githubEndpoint)
+    if err != nil {
+      return nil, fmt.Errorf("failed to parse v3 endpoint: %s", err)
+    }
+
+    client, err = github.NewEnterpriseClient(
+      endpoint.String(),
+      endpoint.String(),
+      oauth2Client,
+    )
+    if err != nil {
+      return nil, err
+    }
+  } else {
+    client = github.NewClient(oauth2Client)
+  }
+
+  return &GithubClient{
+    Org:    org,
+    Client: client,
+  }, nil
+}
