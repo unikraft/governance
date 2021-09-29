@@ -51,6 +51,7 @@ type GithubClient struct {
 // Github interface representing the desired functions for this resource.
 type Github interface {
   FindTeam(org string, team string) (*github.Team, error)
+  CreateOrUpdateTeam(name, description string, parentTeamID int64, privacy *string, maintainers, repos []string) (*github.Team, error)
 }
 
 // NewGitHubClient for creating a new instance of the client.
@@ -129,23 +130,43 @@ func (c *GithubClient) FindTeam(org string, team string) (*github.Team, error) {
   return nil, fmt.Errorf("could not find team: @%s/%s", org, team)
 }
 
-func (c *GithubClient) CreateTeam(name, description string, privacy *string, maintainers, repos []string) (*github.Team, error) {
+func (c *GithubClient) CreateOrUpdateTeam(name, description string, parentTeamID int64, privacy *string, maintainers, repos []string) (*github.Team, error) {
   newTeam := github.NewTeam{
-    Name:        name,
-    Description: &description,
-    Maintainers: maintainers,
-    RepoNames:   repos,
+    Name:          name,
+    Description:  &description,
+    Maintainers:   maintainers,
+    ParentTeamID: &parentTeamID,
+    RepoNames:     repos,
   }
 
   if privacy != nil {
     newTeam.Privacy = privacy
   }
 
-	team, _, err := c.Client.Teams.CreateTeam(
-		context.TODO(),
-		c.Org,
-		newTeam,
-	)
+  var err error
+  var team *github.Team
+
+  // Check if the team already exists
+  team, err = c.FindTeam(c.Org, name)
+  if err != nil {
+    team, _, err = c.Client.Teams.CreateTeam(
+      context.TODO(),
+      c.Org,
+      newTeam,
+    )
+  } else {
+    removeParent := false
+    if parentTeamID < 0 {
+      removeParent = true
+    }
+    team, _, err = c.Client.Teams.EditTeamBySlug(
+      context.TODO(),
+      c.Org,
+      name,
+      newTeam,
+      removeParent,
+    )
+  }
 
   if err != nil {
     return nil, err
