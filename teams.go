@@ -104,6 +104,8 @@ type Team struct {
   parentTeam    *Team       // private reference to parent team
   Description    string     `yaml:"description,omitempty"`
   CodeReview     CodeReview `yaml:"code_review,omitempty"`
+  Maintainers  []User       `yaml:"maintainers,omitempty"`
+  Reviewers    []User       `yaml:"reviewers,omitempty"`
   Members      []User       `yaml:"members,omitempty"`
   Repositories []Repository `yaml:"repositories,omitempty"`
 }
