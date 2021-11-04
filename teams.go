@@ -40,13 +40,16 @@ import (
   "gopkg.in/yaml.v2"
 
   ghApi "github.com/google/go-github/v32/github"
+
   "github.com/unikraft/governance/apis/github"
 )
 
 type UserRole string
 
 const (
+  Admin      UserRole = "admin"
   Maintainer UserRole = "maintainer"
+  Reviewer   UserRole = "reviewer"
   Member     UserRole = "member"
 )
 
@@ -119,6 +122,7 @@ type Team struct {
   Members      []User        `yaml:"members,omitempty"`
   Repositories []Repository  `yaml:"repositories,omitempty"`
   hasSynced      bool
+  shortName      string
 }
 
 var (
@@ -171,6 +175,8 @@ func (t *Team) Sync() error {
     return nil
   }
 
+  t.shortName = t.Name
+
   var err error
   t.hasSynced = false
 
@@ -178,6 +184,7 @@ func (t *Team) Sync() error {
   if t.Type == "" {
     for _, prefix := range []TeamType{SIGTeam, MaintainersTeam, ReviewersTeam} {
       if strings.HasPrefix(t.Name, string(prefix)) {
+        t.shortName = strings.TrimPrefix(t.Name, fmt.Sprintf("%s-", prefix))
         t.Type = prefix
         break
       }
@@ -212,17 +219,32 @@ func (t *Team) Sync() error {
   log.Printf("Synchronising @%s/%s...", gh.Org, t.Name)
 
   var maintainers []string
+  var reviewers []string
+  var members []string
   var repos []string
 
   for _, maintainer := range t.Maintainers {
     maintainers = append(maintainers, maintainer.Github)
+    members = append(members, maintainer.Github)
+  }
+
+  for _, reviewer := range t.Reviewers {
+    reviewers = append(reviewers, reviewer.Github)
+    members = append(members, reviewer.Github)
+  }
+
+  for _, member := range t.Members {
+    members = append(members, member.Github)
   }
 
   for _, repo := range t.Repositories {
     repos = append(repos, repo.Name)
   }
 
-  // Github's Go api is a bit stupid...
+  // Github's Go API is a bit stupid... There is a type mis-match in their
+  // Golang SDK when it comes to the "privacy" attribute (either 'closed' or
+  // 'private') and so we must pass a pointer to a string, rather than the
+  // actual string.
   p := string(t.Privacy)
   var parentTeamID int64
 
@@ -232,7 +254,8 @@ func (t *Team) Sync() error {
     parentTeamID = -1
   }
 
-  // Check if the team already exists, if it does not, we must create it
+  // Check if the team already exists, if it does not, we must create it.
+  log.Printf(" >>> Updating team details...")
   githubTeam, err = gh.CreateOrUpdateTeam(
     t.Name,
     t.Description,
@@ -243,6 +266,82 @@ func (t *Team) Sync() error {
   )
   if err != nil {
     return fmt.Errorf("could not create or update team: %s", err)
+  }
+
+  // Create list of all maintainers
+  var allMaintainerGithubUsernames []string
+  for _, user := range t.Maintainers {
+    allMaintainerGithubUsernames = append(
+      allMaintainerGithubUsernames,
+      user.Github,
+    )
+  }
+
+  log.Printf(" >>> Synchronising team members...")
+  err = gh.SyncTeamMembers(
+    t.Name,
+    string(Member),
+    members,
+  )
+
+  if len(maintainers) > 0 {
+    maintainersTeamName := fmt.Sprintf("%ss-%s", string(Maintainer), t.shortName)
+    log.Printf("Synchronising @%s/%s...", gh.Org, maintainersTeamName)
+
+    // Create or update a sub-team with list of maintainers
+    log.Printf(" >>> Updating team details...")
+    _, err := gh.CreateOrUpdateTeam(
+      maintainersTeamName,
+      fmt.Sprintf("%s maintainers", t.Name),
+      *githubTeam.ID,
+      &p,
+      maintainers,
+      repos,
+    )
+    if err != nil {
+      return fmt.Errorf("could not create or update team: %s", err)
+    }
+
+    // Add and remove these usernames from the second-level `maintainers-` group
+    log.Printf(" >>> Synchronising team members...")
+    err = gh.SyncTeamMembers(
+      maintainersTeamName,
+      string(Maintainer),
+      maintainers,
+    )
+    if err != nil {
+      return fmt.Errorf("could not synchronize team members: %s", err)
+    }
+  }
+
+  if len(reviewers) > 0 {
+    reviewersTeamName := fmt.Sprintf("%ss-%s", string(Reviewer), t.shortName)
+    log.Printf("Synchronising @%s/%s...", gh.Org, reviewersTeamName)
+
+    // Create or update a sub-team with list of reviewers
+    log.Printf(" >>> Updating team details...")
+    _, err := gh.CreateOrUpdateTeam(
+      reviewersTeamName,
+      fmt.Sprintf("%s reviewers", t.Name),
+      *githubTeam.ID,
+      &p,
+      nil,
+      repos,
+    )
+    if err != nil {
+      return fmt.Errorf("could not create or update team: %s", err)
+    }
+
+    // Add and remove these usernames from the second-level `reviewers-` group
+    log.Printf(" >>> Synchronising team members...")
+    err = gh.SyncTeamMembers(
+      reviewersTeamName,
+      string(Member),
+      reviewers,
+    )
+    if err != nil {
+      return fmt.Errorf("could not synchronize team members: %s", err)
+    }
   }
 
   t.hasSynced = true

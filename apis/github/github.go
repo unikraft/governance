@@ -32,6 +32,7 @@ package github
 
 import (
   "fmt"
+  "log"
   "context"
   "net/url"
   "net/http"
@@ -39,6 +40,8 @@ import (
 
   "golang.org/x/oauth2"
   "github.com/google/go-github/v32/github"
+
+  "github.com/unikraft/governance/utils"
 )
 
 // GithubClient containing the necessary information to authenticate and perform
@@ -53,6 +56,10 @@ type Github interface {
   FindTeam(org string, team string) (*github.Team, error)
   CreateOrUpdateTeam(name, description string, parentTeamID int64, privacy *string, maintainers, repos []string) (*github.Team, error)
 }
+
+var (
+  userCache map[string]*github.User
+)
 
 // NewGitHubClient for creating a new instance of the client.
 func NewGithubClient(org string, accessToken string, skipSSL bool, githubEndpoint string) (*GithubClient, error) {
@@ -97,6 +104,8 @@ func NewGithubClient(org string, accessToken string, skipSSL bool, githubEndpoin
     client = github.NewClient(oauth2Client)
   }
 
+  userCache = make(map[string]*github.User)
+
   return &GithubClient{
     Org:    org,
     Client: client,
@@ -130,13 +139,36 @@ func (c *GithubClient) FindTeam(org string, team string) (*github.Team, error) {
   return nil, fmt.Errorf("could not find team: @%s/%s", org, team)
 }
 
+// FindUser takes a Github username and returns a detaled object with
+// information about the user.
+func (c *GithubClient) FindUser(username string) (*github.User, error) {
+  if user, ok := userCache[username]; ok {
+    return user, nil
+  }
+
+  user, _, err := c.Client.Users.Get(
+    context.TODO(),
+    username,
+  )
+  if err != nil {
+    return nil, fmt.Errorf("could not find user: %s: %s", username, err)
+  }
+
+  userCache[username] = user
+
+  return user, nil
+}
+
 func (c *GithubClient) CreateOrUpdateTeam(name, description string, parentTeamID int64, privacy *string, maintainers, repos []string) (*github.Team, error) {
   newTeam := github.NewTeam{
     Name:          name,
     Description:  &description,
     Maintainers:   maintainers,
-    ParentTeamID: &parentTeamID,
     RepoNames:     repos,
+  }
+
+  if parentTeamID > 0 {
+    newTeam.ParentTeamID = &parentTeamID
   }
 
   if privacy != nil {
@@ -173,4 +205,97 @@ func (c *GithubClient) CreateOrUpdateTeam(name, description string, parentTeamID
   }
 
   return team, nil
+}
+
+func (c *GithubClient) ListOrgMembers(role string) ([]string, error) {
+  var members []string
+
+  users, _, err := c.Client.Organizations.ListMembers(
+    context.TODO(),
+    c.Org,
+    &github.ListMembersOptions{
+      Role: role,
+    },
+  )
+  if err != nil {
+    return nil, fmt.Errorf("could not list org members: %s", err)
+  }
+
+  for _, user := range users {
+    userCache[*user.Login] = user
+    members = append(members, *user.Login)
+  }
+
+  return members, nil
+}
+
+func (c *GithubClient) SyncTeamMembers(team, role string, members []string) error {
+  var allCurrentUsernames []string
+	opts := github.ListOptions{}
+
+  for {
+    more, resp, err := c.Client.Teams.ListTeamMembersBySlug(
+      context.TODO(),
+      c.Org,
+      team,
+      &github.TeamListTeamMembersOptions{
+        // Role: role,
+        ListOptions: opts,
+      },
+    )
+    if err != nil {
+      return err
+    }
+
+    for _, user := range more {
+      allCurrentUsernames = append(allCurrentUsernames, *user.Login)
+    }
+
+		if resp.NextPage == 0 {
+			break
+		}
+
+		opts.Page = resp.NextPage
+  }
+
+  usernamesToRemove := utils.Difference(allCurrentUsernames, members)
+
+  if len(usernamesToRemove) > 0 {
+    for _, user := range usernamesToRemove {
+      log.Printf(" >>>>>> Removing: %s...", user)
+      resp, err := c.Client.Teams.RemoveTeamMembershipBySlug(
+        context.TODO(),
+        c.Org,
+        team,
+        user,
+      )
+      if err != nil {
+        fmt.Printf("%#v\n\n", resp.Request)
+
+        return fmt.Errorf("could not remove user: %s: %s", user, err)
+      }
+    }
+  }
+
+  usernamesToAdd := utils.Difference(members, allCurrentUsernames)
+
+  if len(usernamesToAdd) > 0 {
+    for _, user := range usernamesToAdd {
+      log.Printf(" >>>>>> Adding: %s...", user)
+      _, _, err := c.Client.Teams.AddTeamMembershipBySlug(
+        context.TODO(),
+        c.Org,
+        team,
+        user,
+        &github.TeamAddTeamMembershipOptions{
+          Role: role,
+        },
+      )
+      if err != nil {
+        return fmt.Errorf("could not add user: %s: %s", user, err)
+      }
+    }
+  }
+
+  return nil
 }
