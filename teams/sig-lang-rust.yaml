@@ -13,3 +13,7 @@ reviewers:
     github: gaulthiergain
   - name: Dennis Kobert
     github: TrueDoctor
+
+repos:
+  - name: app-rust
+  - name: lib-rust
