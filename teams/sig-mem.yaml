@@ -11,3 +11,9 @@ maintainers:
 reviewers:
   - name: Cezar Craciunoiu
     github: craciunoiuc
+
+repos:
+  - name: lib-mimalloc
+  - name: lib-tinyalloc
+  - name: lib-tlsf
+  - name: lib-wilde
