@@ -1,0 +1,8 @@
+name: unikraft
+type: core
+description: Unikraft is an automated system for building specialized OSes known as unikernels. Unikraft can be configured to be POSIX-compliant. (Core repository)
+branch_protection_rules:
+  - pattern: staging
+    is_admin_enforced: true
+    required_approving_review_count: 2
+    requires_codeowner_reviews: true
