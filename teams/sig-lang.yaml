@@ -15,3 +15,27 @@ reviewers:
     github: CristiBM
   - name: Cyril Soldani
     github: cffs
+
+repos:
+  - name: app-click
+  - name: app-duktape
+  - name: app-helloworld-cpp
+  - name: app-helloworld-go
+  - name: app-lua
+  - name: app-micropython
+  - name: app-openjdk11
+  - name: app-python3
+  - name: app-ruby
+  - name: app-wamr
+  - name: lib-click
+  - name: lib-dafny
+  - name: lib-duktape
+  - name: lib-gcc
+  - name: lib-libgo
+  - name: lib-lua
+  - name: lib-micropython
+  - name: lib-openjdk11
+  - name: lib-python3
+  - name: lib-ruby
+  - name: lib-v8
+  - name: lib-wamr
