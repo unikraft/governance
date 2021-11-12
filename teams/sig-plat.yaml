@@ -11,3 +11,10 @@ maintainers:
 reviewers:
   - name: Daniel Dincă
     github: danield20
+
+repos:
+  - name: plat-aws
+  - name: plat-digitalocean
+  - name: plat-firecracker
+  - name: plat-gcp
+  - name: plat-solo5
