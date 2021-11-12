@@ -13,3 +13,9 @@ reviewers:
     github: mschlumpp
   - name: Dragoș Argint
     github: dragosargint
+
+repos:
+  - name: lib-extfs
+  - name: lib-fatfs
+  - name: lib-naivefs
+  - name: lib-shfs
