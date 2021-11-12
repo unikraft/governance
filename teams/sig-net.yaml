@@ -15,3 +15,17 @@ reviewers:
     github: clupuishere
   - name: Hugo Lefeuvre
     github: hlef
+
+repos:
+  - name: app-click
+  - name: app-httpreply
+  - name: app-nginx
+  - name: lib-c-ares
+  - name: lib-click
+  - name: lib-dpdk
+  - name: lib-flatbuffers
+  - name: lib-http-parser
+  - name: lib-lwip
+  - name: lib-nginx
+  - name: lib-open62541
+  - name: lib-protobuf
