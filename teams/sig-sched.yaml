@@ -13,3 +13,7 @@ reviewers:
     github: dragosargint
   - name: Daniel Dincă
     github: danield20
+
+repos:
+  - name: lib-pthread-embedded
+  - name: lib-pthreadpool
