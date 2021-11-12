@@ -1,0 +1,8 @@
+name: tlsf
+type: lib
+description: Port of TLSF for Unikraft, a general-purpose memory allocator
+branch_protection_rules:
+  - pattern: staging
+    is_admin_enforced: true
+    required_approving_review_count: 1
+    requires_codeowner_reviews: false
