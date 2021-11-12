@@ -13,3 +13,31 @@ reviewers:
     github: dragosargint
   - name: Sergiu Moga
     github: mogasergiu
+
+repos:
+  - name: lib-boost
+  - name: lib-eigen
+  - name: lib-fft2d
+  - name: lib-gemmlowp
+  - name: lib-glib
+  - name: lib-libargp
+  - name: lib-libcxx
+  - name: lib-libelf
+  - name: lib-libevent
+  - name: lib-libfp16
+  - name: lib-libfxdiv
+  - name: lib-libicu
+  - name: lib-libjpeg
+  - name: lib-libm
+  - name: lib-libpng
+  - name: lib-libtff
+  - name: lib-libucontext
+  - name: lib-libunwind
+  - name: lib-libuuid
+  - name: lib-libuv
+  - name: lib-lzma
+  - name: lib-musl
+  - name: lib-newlib
+  - name: lib-psimd
+  - name: lib-sleef
+  - name: lib-zlib
