@@ -15,3 +15,7 @@ reviewers:
     github: adinasm
   - name: Vlad-Andrei Bădoiu
     github: vladandrew
+
+repos:
+  - name: kraft
+  - name: cicd-pipelines
