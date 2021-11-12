@@ -1,0 +1,8 @@
+name: wamr
+type: lib
+description: Unikraft port of WAMR, Intel's WebAssembly Micro Runtime
+branch_protection_rules:
+  - pattern: staging
+    is_admin_enforced: true
+    required_approving_review_count: 1
+    requires_codeowner_reviews: false

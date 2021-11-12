@@ -1,0 +1,8 @@
+name: farmhash
+type: lib
+description: Unikraft port of Google's FarmHash library
+branch_protection_rules:
+  - pattern: staging
+    is_admin_enforced: true
+    required_approving_review_count: 1
+    requires_codeowner_reviews: false
