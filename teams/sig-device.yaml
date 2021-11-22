@@ -13,3 +13,7 @@ reviewers:
     github: andreeaDumitrache29
   - name: Răzvan Vîrtan
     github: razvanvirtan
+
+repos:
+  - name: plat-raspi
+  - name: plat-xilinx-zynqmp
