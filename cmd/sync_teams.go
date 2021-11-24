@@ -32,13 +32,13 @@ package main
 import (
   "os"
   "fmt"
-  "log"
   "path"
   "strings"
   "io/ioutil"
 
   "gopkg.in/yaml.v2"
   "github.com/spf13/cobra"
+  log "github.com/sirupsen/logrus"
 
   ghApi "github.com/google/go-github/v32/github"
 
@@ -222,7 +222,7 @@ func (t *Team) Sync() error {
     }
   }
 
-  log.Printf("Synchronising @%s/%s...", gh.Org, t.Name)
+  log.Infof("Synchronising @%s/%s...", gh.Org, t.Name)
 
   var maintainers []string
   var reviewers []string
@@ -261,7 +261,7 @@ func (t *Team) Sync() error {
   }
 
   // Check if the team already exists, if it does not, we must create it.
-  log.Printf(" >>> Updating team details...")
+  log.Infof(" >>> Updating team details...")
   githubTeam, err = gh.CreateOrUpdateTeam(
     t.Name,
     t.Description,
@@ -283,7 +283,7 @@ func (t *Team) Sync() error {
     )
   }
 
-  log.Printf(" >>> Synchronising team members...")
+  log.Infof(" >>> Synchronising team members...")
   err = gh.SyncTeamMembers(
     t.Name,
     string(Member),
@@ -292,10 +292,10 @@ func (t *Team) Sync() error {
 
   if len(maintainers) > 0 {
     maintainersTeamName := fmt.Sprintf("%ss-%s", string(Maintainer), t.shortName)
-    log.Printf("Synchronising @%s/%s...", gh.Org, maintainersTeamName)
+    log.Infof("Synchronising @%s/%s...", gh.Org, maintainersTeamName)
 
     // Create or update a sub-team with list of maintainers
-    log.Printf(" >>> Updating team details...")
+    log.Infof(" >>> Updating team details...")
     _, err := gh.CreateOrUpdateTeam(
       maintainersTeamName,
       fmt.Sprintf("%s maintainers", t.Name),
@@ -309,7 +309,7 @@ func (t *Team) Sync() error {
     }
 
     // Add and remove these usernames from the second-level `maintainers-` group
-    log.Printf(" >>> Synchronising team members...")
+    log.Infof(" >>> Synchronising team members...")
     err = gh.SyncTeamMembers(
       maintainersTeamName,
       string(Maintainer),
@@ -322,10 +322,10 @@ func (t *Team) Sync() error {
 
   if len(reviewers) > 0 {
     reviewersTeamName := fmt.Sprintf("%ss-%s", string(Reviewer), t.shortName)
-    log.Printf("Synchronising @%s/%s...", gh.Org, reviewersTeamName)
+    log.Infof("Synchronising @%s/%s...", gh.Org, reviewersTeamName)
 
     // Create or update a sub-team with list of reviewers
-    log.Printf(" >>> Updating team details...")
+    log.Infof(" >>> Updating team details...")
     _, err := gh.CreateOrUpdateTeam(
       reviewersTeamName,
       fmt.Sprintf("%s reviewers", t.Name),
@@ -339,7 +339,7 @@ func (t *Team) Sync() error {
     }
 
     // Add and remove these usernames from the second-level `reviewers-` group
-    log.Printf(" >>> Synchronising team members...")
+    log.Infof(" >>> Synchronising team members...")
     err = gh.SyncTeamMembers(
       reviewersTeamName,
       string(Member),
@@ -441,7 +441,7 @@ func doSyncTeamsCmd(cmd *cobra.Command, args []string) {
       } else {
         // We might be lucky... it may exist upstream when we later call the
         // Github API.  If it doesn't then we're in trouble...
-        log.Printf("warning: cannot find parent from provided teams: %s", team.Parent)
+        log.Warnf("cannot find parent from provided teams: %s", team.Parent)
       }
     }
   }
