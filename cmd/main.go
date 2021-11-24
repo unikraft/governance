@@ -180,6 +180,9 @@ func NewRootCommand() *cobra.Command {
     "Show version and quit",
   )
 
+  // Subcommands
+  rootCmd.AddCommand(syncTeamsCmd)
+
   return rootCmd
 }
 

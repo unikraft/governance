@@ -38,6 +38,7 @@ import (
   "io/ioutil"
 
   "gopkg.in/yaml.v2"
+  "github.com/spf13/cobra"
 
   ghApi "github.com/google/go-github/v32/github"
 
@@ -128,6 +129,11 @@ type Team struct {
 var (
   gh      *github.GithubClient
   teams []*Team
+  syncTeamsCmd = &cobra.Command{
+    Use: "sync-teams",
+    Short: "Synchronise teams",
+    Run: doSyncTeamsCmd,
+  }
 )
 
 func findTeamByName(a string) *Team {
@@ -383,7 +389,8 @@ func setupGithubClient() error {
   return nil
 }
 
-func main() {
+// doSyncTeamsCmd starts the main system
+func doSyncTeamsCmd(cmd *cobra.Command, args []string) {
   var err error
   teamsDir := "./teams"
 
