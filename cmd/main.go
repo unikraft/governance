@@ -103,6 +103,9 @@ func NewRootCommand() *cobra.Command {
       if err := initLogging(verbose); err != nil {
         return err
       }
+      if err := dirChecks(); err != nil {
+        return err
+      }
       if err := initGithubClient(); err != nil {
         return err
       }
@@ -182,6 +185,9 @@ func NewRootCommand() *cobra.Command {
 
   // Subcommands
   rootCmd.AddCommand(syncTeamsCmd)
+  rootCmd.AddCommand(syncLabelsCmd)
+  rootCmd.AddCommand(syncReposCmd)
+  rootCmd.AddCommand(syncPrCmd)
 
   return rootCmd
 }
@@ -199,6 +205,14 @@ func initLogging(verbose bool) error {
   log.SetLevel(log.InfoLevel)
   if verbose {
     log.SetLevel(log.TraceLevel)
+  }
+
+  return nil
+}
+
+func dirChecks() error {
+  if _, err := os.Stat(globalConfig.teamsDir); os.IsNotExist(err) {
+    return fmt.Errorf("could not read find teams directory: %s", err)
   }
 
   return nil
