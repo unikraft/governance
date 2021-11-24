@@ -31,7 +31,6 @@ package main
 // POSSIBILITY OF SUCH DAMAGE.
 import (
   "os"
-  "fmt"
   "path"
   "io/ioutil"
 
@@ -52,41 +51,6 @@ var (
   }
 )
 
-func setupGithubClient() error {
-  var err error
-
-  githubOrg := os.Getenv("GITHUB_ORG")
-  if githubOrg == "" {
-    return fmt.Errorf("GITHUB_ORG not set")
-  }
-
-  githubToken := os.Getenv("GITHUB_TOKEN")
-  if githubToken == "" {
-    return fmt.Errorf("GITHUB_TOKEN token not set")
-  }
-
-  var githubSkipSSL bool
-  if os.Getenv("GITHUB_SKIP_SSL") == "true" {
-    githubSkipSSL = true
-  } else {
-    githubSkipSSL = false
-  }
-
-  githubEndpoint := os.Getenv("GITHUB_ENDPOINT")
-
-  gh, err = github.NewGithubClient(
-    githubOrg,
-    githubToken,
-    githubSkipSSL,
-    githubEndpoint,
-  )
-  if err != nil {
-    return fmt.Errorf("could not create github client: %s", err)
-  }
-
-  return nil
-}
-
 // doSyncTeamsCmd starts the main system
 func doSyncTeamsCmd(cmd *cobra.Command, args []string) {
   var err error
@@ -94,12 +58,6 @@ func doSyncTeamsCmd(cmd *cobra.Command, args []string) {
   files, err := ioutil.ReadDir(globalConfig.teamsDir)
   if err != nil {
     log.Fatalf("could not read directory: %s", err)
-    os.Exit(1)
-  }
-
-  err = setupGithubClient()
-  if err != nil {
-    log.Fatalf("could not setup github client: %s", err)
     os.Exit(1)
   }
 
