@@ -380,3 +380,26 @@ func (c *GithubClient) AddMaintainersToPr(repo string, prId int, maintainers []s
 
   return nil
 }
+
+// GetReviewersOnPr retrieves a lsit of GitHub usernames attached as the
+// reviewer for a particular PR
+func (c *GithubClient) GetReviewersOnPr(repo string, prId int) ([]string, error) {
+  ghReviewers, _, err := c.Client.PullRequests.ListReviewers(
+    context.TODO(),
+    c.Org,
+    repo,
+    prId,
+    &github.ListOptions{},
+  )
+  if err != nil {
+    return nil, err
+  }
+
+  var reviewers []string
+
+  for _, user := range ghReviewers.Users {
+    reviewers = append(reviewers, *user.Login)
+  }
+
+  return reviewers, err
+}
