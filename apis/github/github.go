@@ -364,3 +364,19 @@ func (c *GithubClient) GetMaintainersOnPr(repo string, prId int) ([]string, erro
 
   return maintainers, nil
 }
+
+// AddMaintainersToPr adds a list of GitHub usernames as "assignee" to a PR
+func (c *GithubClient) AddMaintainersToPr(repo string, prId int, maintainers []string) error {
+  _, _, err := c.Client.Issues.AddAssignees(
+    context.TODO(),
+    c.Org,
+    repo,
+    prId,
+    maintainers,
+  )
+  if err != nil {
+    return err
+  }
+
+  return nil
+}
