@@ -299,3 +299,34 @@ func (c *GithubClient) SyncTeamMembers(team, role string, members []string) erro
 
   return nil
 }
+
+// ListPullRequests returns the list of pull requests for the configured repo
+func (c *GithubClient) ListOpenPullRequests(repo string) ([]*github.PullRequest, error) {
+  var allPrs []*github.PullRequest
+	opts := github.ListOptions{}
+
+  for {
+    prs, resp, err := c.Client.PullRequests.List(
+      context.TODO(),
+      c.Org,
+      repo,
+      &github.PullRequestListOptions{
+        State: "open",
+        ListOptions: opts,
+      },
+    )
+    if err != nil {
+      return allPrs, err
+    }
+
+    allPrs = append(allPrs, prs...)
+
+		if resp.NextPage == 0 {
+			break
+		}
+
+		opts.Page = resp.NextPage
+  }
+
+  return allPrs, nil
+}
