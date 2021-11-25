@@ -103,9 +103,22 @@ type Team struct {
 }
 
 func FindTeamByName(a string, teams []*Team) *Team {
+  if a[0] == '@' {
+    split := strings.Split(a, "/")
+    a = split[1]
+  }
+
   for _, b := range teams {
+    // Check if the name is equal verbatim
     if b.Name == a {
       return b
+    }
+
+    // Check if the team type has been prefixed
+    for _, t := range TeamTypes {
+      if fmt.Sprintf("%s-%s", t, b.Name) == a {
+        return b
+      }
     }
   }
 
