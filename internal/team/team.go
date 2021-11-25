@@ -32,6 +32,7 @@ package team
 
 import (
   "fmt"
+  "strings"
   "io/ioutil"
 
   "gopkg.in/yaml.v2"
@@ -129,6 +130,19 @@ func NewTeamFromYAML(ghApi *github.GithubClient, githubOrg, teamsFile string) (*
   // team.
   if team.Name == "" {
     return nil, fmt.Errorf("team name not provided for %s", teamsFile)
+  }
+
+  if strings.Contains(team.Name, "-") {
+    split := strings.Split(team.Name, "-")
+    n := strings.Join(split[1:], "-")
+
+    for _, t := range TeamTypes {
+      if split[0] == string(t) {
+        team.Name = n
+        team.Type = t
+        break
+      }
+    }
   }
 
   // Now let's check if all maintainers, reviewers and members have at least
