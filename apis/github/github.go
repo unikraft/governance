@@ -347,3 +347,20 @@ func (c *GithubClient) GetPullRequest(repo string, prId int) (*github.PullReques
 
   return pull, nil
 }
+
+// GetMaintainersOnPr retrieves a list of GitHub usernames attached as the
+// "assignee" (or maintainer) of a particular PR
+func (c *GithubClient) GetMaintainersOnPr(repo string, prId int) ([]string, error) {
+  pull, err := c.GetPullRequest(repo, prId)
+  if err != nil {
+    return nil, err
+  }
+
+  var maintainers []string
+
+  for _, user := range pull.Assignees {
+    maintainers = append(maintainers, *user.Login)
+  }
+
+  return maintainers, nil
+}
