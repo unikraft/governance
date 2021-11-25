@@ -110,8 +110,8 @@ func FindTeamByName(a string, teams []*Team) *Team {
   return nil
 }
 
-func NewTeamFromYAML(ghApi *github.GithubClient, githubOrg, path string) (*Team, error) {
-  yamlFile, err := ioutil.ReadFile(path)
+func NewTeamFromYAML(ghApi *github.GithubClient, githubOrg, teamsFile string) (*Team, error) {
+  yamlFile, err := ioutil.ReadFile(teamsFile)
   if err != nil {
     return nil, fmt.Errorf("could not open yaml file: %s", err)
   }
@@ -128,7 +128,7 @@ func NewTeamFromYAML(ghApi *github.GithubClient, githubOrg, path string) (*Team,
   // Let's perform a sanity check and check if we have at least the name of the
   // team.
   if team.Name == "" {
-    return nil, fmt.Errorf("team name not provided for %s", path)
+    return nil, fmt.Errorf("team name not provided for %s", teamsFile)
   }
 
   // Now let's check if all maintainers, reviewers and members have at least
