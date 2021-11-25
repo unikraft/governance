@@ -330,3 +330,20 @@ func (c *GithubClient) ListOpenPullRequests(repo string) ([]*github.PullRequest,
 
   return allPrs, nil
 }
+
+// GetPullRequest returns the specific pull request given its ID relative to the
+// configured repo
+func (c *GithubClient) GetPullRequest(repo string, prId int) (*github.PullRequest, error) {
+  pull, _, err := c.Client.PullRequests.Get(
+    context.TODO(),
+    c.Org,
+    repo,
+    prId,
+  )
+
+  if err != nil {
+    return nil, err
+  }
+
+  return pull, nil
+}
