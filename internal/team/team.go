@@ -86,6 +86,7 @@ const (
 type Team struct {
   ghApi         *github.GithubClient
   Org            string
+  fullname       string
   Name           string          `yaml:"name,omitempty"`
   Type           TeamType        `yaml:"type,omitempty"`
   Privacy        TeamPrivacy     `yaml:"privacy,omitempty"`
@@ -109,6 +110,33 @@ func FindTeamByName(a string, teams []*Team) *Team {
   }
 
   return nil
+}
+
+func (r *Team) Fullname() string {
+  if r.fullname != "" {
+    return r.fullname
+  }
+
+  if strings.Contains(r.Name, "-") {
+    split := strings.Split(r.Name, "-")
+    n := strings.Join(split[1:], "-")
+
+    for _, t := range TeamTypes {
+      if split[0] == string(t) {
+        r.Name = n
+        r.Type = t
+        break
+      }
+    }
+  }
+
+  if r.Type == MiscTeam {
+    r.fullname = r.Name
+  } else {
+    r.fullname = fmt.Sprintf("%s-%s", r.Type, r.Name)
+  }
+
+  return r.fullname
 }
 
 func NewTeamFromYAML(ghApi *github.GithubClient, githubOrg, teamsFile string) (*Team, error) {
