@@ -31,8 +31,6 @@ package main
 // POSSIBILITY OF SUCH DAMAGE.
 import (
   "os"
-  "path"
-  "io/ioutil"
 
   "github.com/spf13/cobra"
   log "github.com/sirupsen/logrus"
@@ -43,7 +41,6 @@ import (
 
 var (
   gh      *github.GithubClient
-  teams []*team.Team
   syncTeamsCmd = &cobra.Command{
     Use: "sync-teams",
     Short: "Synchronise teams",
@@ -53,49 +50,16 @@ var (
 
 // doSyncTeamsCmd starts the main system
 func doSyncTeamsCmd(cmd *cobra.Command, args []string) {
-  var err error
-
-  files, err := ioutil.ReadDir(globalConfig.teamsDir)
+  teams, err := team.NewListOfTeamsFromPath(
+    globalConfig.ghApi,
+    globalConfig.githubOrg,
+    globalConfig.teamsDir,
+  )
   if err != nil {
-    log.Fatalf("could not read directory: %s", err)
+    log.Fatalf("could not parse teams: %s", err)
     os.Exit(1)
   }
 
-  // To solve a potential dependency problem where teams are dependent on teams
-  // which do not exist, we are going to populate a list "processed" teams first
-  // and then check if any of the teams has a parent which does not exist in the
-  // list which we have just populated.
-
-  // Iterate through all files and populate a list of known teams.
-  for _, file := range files {
-    t, err := team.NewTeamFromYAML(
-      globalConfig.ghApi,
-      globalConfig.githubOrg,
-      path.Join(globalConfig.teamsDir, file.Name()),
-    )
-    if err != nil {
-      log.Fatalf("could not parse teams file: %s", err)
-    }
-
-    teams = append(teams, t)
-  }
-
-  // Now iterate through known teams and match parents
-  for _, t := range teams {
-    if t.Parent != "" {
-      parent := team.FindTeamByName(t.Parent, teams)
-      if parent != nil {
-        t.ParentTeam = parent
-        break
-      } else {
-        // We might be lucky... it may exist upstream when we later call the
-        // Github API.  If it doesn't then we're in trouble...
-        log.Warnf("cannot find parent from provided teams: %s", t.Parent)
-      }
-    }
-  }
-
-  // Finally, synchronise all teams now that we have linked relevant teams
   for _, t := range teams {
     err = t.Sync()
     if err != nil {

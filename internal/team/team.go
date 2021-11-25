@@ -32,10 +32,12 @@ package team
 
 import (
   "fmt"
+  "path"
   "strings"
   "io/ioutil"
 
   "gopkg.in/yaml.v2"
+  log "github.com/sirupsen/logrus"
 
   "github.com/unikraft/governance/apis/github"
   "github.com/unikraft/governance/internal/user"
@@ -197,4 +199,49 @@ func NewTeamFromYAML(ghApi *github.GithubClient, githubOrg, teamsFile string) (*
   }
 
   return team, nil
+}
+
+func NewListOfTeamsFromPath(ghApi *github.GithubClient, githubOrg, teamsDir string) ([]*Team, error) {
+  teams := make([]*Team, 0)
+
+  files, err := ioutil.ReadDir(teamsDir)
+  if err != nil {
+    return nil, fmt.Errorf("could not read directory: %s", err)
+  }
+
+  // To solve a potential dependency problem where teams are dependent on teams
+  // which do not exist, we are going to populate a list "processed" teams first
+  // and then check if any of the teams has a parent which does not exist in the
+  // list which we have just populated.
+
+  // Iterate through all files and populate a list of known teams.
+  for _, file := range files {
+    t, err := NewTeamFromYAML(
+      ghApi,
+      githubOrg,
+      path.Join(teamsDir, file.Name()),
+    )
+    if err != nil {
+      return nil, fmt.Errorf("could not parse teams file: %s", err)
+    }
+
+    teams = append(teams, t)
+  }
+
+  // Now iterate through known teams and match parents
+  for _, t := range teams {
+    if t.Parent != "" {
+      parent := FindTeamByName(t.Parent, teams)
+      if parent != nil {
+        t.ParentTeam = parent
+        break
+      } else {
+        // We might be lucky... it may exist upstream when we later call the
+        // Github API.  If it doesn't then we're in trouble...
+        log.Warnf("cannot find parent from provided teams: %s", t.Parent)
+      }
+    }
+  }
+
+  return teams, nil
 }
