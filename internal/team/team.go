@@ -51,7 +51,7 @@ const (
 type CodeReview struct {
   NumReviewers           int                 `yaml:"num_reviewers,omitempty"`
   Algorithm              CodeReviewAlgorithm `yaml:"algorithm,omitempty"`
-  NeverAssign          []user.User          `yaml:"never_assign,omitempty"`
+  NeverAssign          []user.User           `yaml:"never_assign,omitempty"`
   DontNotifyTeam         bool                `yaml:"dont_notify_team,omitempty"`
   IncludeChildTeams      bool                `yaml:"include_child_teams,omitempty"`
   RemoveReviewRequest    bool                `yaml:"remove_review_request,omitempty"`
