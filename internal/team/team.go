@@ -67,6 +67,14 @@ const (
   MiscTeam        TeamType = "misc"
 )
 
+var (
+  TeamTypes = []TeamType{
+    SIGTeam,
+    MaintainersTeam,
+    ReviewersTeam,
+  }
+)
+
 type TeamPrivacy string
 
 const (
