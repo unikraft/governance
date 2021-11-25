@@ -403,3 +403,23 @@ func (c *GithubClient) GetReviewersOnPr(repo string, prId int) ([]string, error)
 
   return reviewers, err
 }
+
+// AddReviewersToPr adds a list of GitHub usernames as reviewers to a PR
+func (c *GithubClient) AddReviewersToPr(repo string, prId int, reviewers []string) error {
+  _, _, err := c.Client.PullRequests.RequestReviewers(
+    context.TODO(),
+    c.Org,
+    repo,
+    prId,
+    github.ReviewersRequest{
+      // NodeID: ,
+      Reviewers: reviewers,
+    },
+  )
+
+  if err != nil {
+    return fmt.Errorf("could not add assignees to PR: %s", err)
+  }
+
+  return nil
+}
