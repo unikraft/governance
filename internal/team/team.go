@@ -97,7 +97,7 @@ type Team struct {
   Maintainers  []user.User       `yaml:"maintainers,omitempty"`
   Reviewers    []user.User       `yaml:"reviewers,omitempty"`
   Members      []user.User       `yaml:"members,omitempty"`
-  Repositories []repo.Repository `yaml:"repositories,omitempty"`
+  Repositories []repo.Repository `yaml:"repos,omitempty"`
   hasSynced      bool
   shortName      string
 }
