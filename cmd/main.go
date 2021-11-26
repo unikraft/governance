@@ -134,7 +134,7 @@ func NewRootCommand() *cobra.Command {
     },
     Run:               func(cmd *cobra.Command, args []string) {
       if len(args) == 0 {
-        cmd.Help()
+        cmd.Help() // nolint:errcheck
         os.Exit(0)
       }
     },
