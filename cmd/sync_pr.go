@@ -439,7 +439,7 @@ func doSyncPrCmd(cmd *cobra.Command, args []string) {
           }
 
           // Do not add the PR author
-          if containsStr(maintainers, *pr.pr.User.Login) {
+          if m.Github == *pr.pr.User.Login {
             continue
           }
 
@@ -453,7 +453,7 @@ func doSyncPrCmd(cmd *cobra.Command, args []string) {
           }
 
           // Do not add the PR author
-          if containsStr(reviewers, *pr.pr.User.Login) {
+          if m.Github == *pr.pr.User.Login {
             continue
           }
 
