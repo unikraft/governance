@@ -220,6 +220,7 @@ func NewRootCommand() *cobra.Command {
 
   // Subcommands
   rootCmd.AddCommand(syncTeamsCmd)
+  rootCmd.AddCommand(syncPrCmd)
 
   return rootCmd
 }
