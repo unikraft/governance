@@ -595,7 +595,7 @@ func updatePrWithPossibleMaintainersAndReviewers(repo string, prId int, possible
     if !globalConfig.dryRun {
       err := globalConfig.ghApi.AddReviewersToPr(repo, prId, reviewers)
       if err != nil {
-        log.Fatalf("could not add maintainers to repo=%s pr_id=%d: %s", repo, prId, err)
+        log.Fatalf("could not add reviewer to repo=%s pr_id=%d: %s", repo, prId, err)
         os.Exit(1)
       }
     }
