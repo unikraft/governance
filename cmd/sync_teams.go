@@ -34,12 +34,9 @@ import (
 
   "github.com/spf13/cobra"
   log "github.com/sirupsen/logrus"
-
-  "github.com/unikraft/governance/apis/github"
 )
 
 var (
-  gh      *github.GithubClient
   syncTeamsCmd = &cobra.Command{
     Use: "sync-teams",
     Short: "Synchronise teams",
