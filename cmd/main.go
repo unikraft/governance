@@ -293,14 +293,14 @@ func bindFlags(cmd *cobra.Command, v *viper.Viper) {
     // STING_FAVORITE_COLOR
     if strings.Contains(f.Name, "-") {
       envVarSuffix := strings.ToUpper(strings.ReplaceAll(f.Name, "-", "_"))
-      v.BindEnv(f.Name, fmt.Sprintf("%s_%s", envPrefix, envVarSuffix))
+      v.BindEnv(f.Name, fmt.Sprintf("%s_%s", envPrefix, envVarSuffix)) // nolint:errcheck
     }
 
     // Apply the viper config value to the flag when the flag is not set and
     // viper has a value
     if !f.Changed && v.IsSet(f.Name) {
       val := v.Get(f.Name)
-      cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+      cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val)) // nolint:errcheck
     }
   })
 }
