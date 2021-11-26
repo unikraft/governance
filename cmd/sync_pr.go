@@ -526,15 +526,15 @@ func updatePrWithPossibleMaintainersAndReviewers(repo string, prId int, possible
     return fmt.Errorf("could not assign reviewers as none provided")
   }
 
-  newMaintainers, err := globalConfig.ghApi.GetMaintainersOnPr(repo, prId)
+  maintainers, err := globalConfig.ghApi.GetMaintainersOnPr(repo, prId)
   if err != nil {
     return err
   }
 
-  if len(newMaintainers) == 0 {
+  if len(maintainers) == 0 {
     for i := 0; i < syncPrConfig.numMaintainers; i++ {
       m := popLeastStressedMaintainer(possibleMaintainers)
-      newMaintainers = append(newMaintainers, m)
+      maintainers = append(maintainers, m)
 
       log.WithFields(log.Fields{
         "maintainer": m,
@@ -542,7 +542,7 @@ func updatePrWithPossibleMaintainersAndReviewers(repo string, prId int, possible
     }
 
     if !globalConfig.dryRun {
-      err := globalConfig.ghApi.AddMaintainersToPr(repo, prId, newMaintainers)
+      err := globalConfig.ghApi.AddMaintainersToPr(repo, prId, maintainers)
       if err != nil {
         log.Fatalf("could not add maintainers to repo=%s pr_id=%d: %s", repo, prId, err)
         os.Exit(1)
@@ -552,7 +552,7 @@ func updatePrWithPossibleMaintainersAndReviewers(repo string, prId int, possible
 
   // Remove assigned maintainers from list of possible reviewers (in case there
   // are any overlaps as we cannot have the same reviewer and approver).
-  for _, maintainer := range newMaintainers {
+  for _, maintainer := range maintainers {
     for i, reviewer := range possibleReviewers {
       if reviewer == maintainer {
         possibleReviewers = append(possibleReviewers[:i], possibleReviewers[i+1:]...)
@@ -560,14 +560,14 @@ func updatePrWithPossibleMaintainersAndReviewers(repo string, prId int, possible
     }
   }
 
-  newReviewers, err := globalConfig.ghApi.GetReviewersOnPr(repo, prId)
+  reviewers, err := globalConfig.ghApi.GetReviewersOnPr(repo, prId)
   if err != nil {
     return err
   }
-  if len(newReviewers) == 0 {
+  if len(reviewers) == 0 {
     for i := 0; i < syncPrConfig.numReviewers; i++ {
       r := popLeastStressedReviewer(possibleReviewers)
-      newReviewers = append(newReviewers, r)
+      reviewers = append(reviewers, r)
 
       log.WithFields(log.Fields{
         "reviewer": r,
@@ -575,7 +575,7 @@ func updatePrWithPossibleMaintainersAndReviewers(repo string, prId int, possible
     }
 
     if !globalConfig.dryRun {
-      err := globalConfig.ghApi.AddReviewersToPr(repo, prId, newReviewers)
+      err := globalConfig.ghApi.AddReviewersToPr(repo, prId, reviewers)
       if err != nil {
         log.Fatalf("could not add maintainers to repo=%s pr_id=%d: %s", repo, prId, err)
         os.Exit(1)
