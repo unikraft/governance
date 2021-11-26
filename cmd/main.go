@@ -45,6 +45,7 @@ import (
 )
 
 type GlobalConfig struct {
+  dryRun         bool
   labelsDir      string
   teamsDir       string
   reposDir       string
@@ -125,6 +126,13 @@ func NewRootCommand() *cobra.Command {
   }
 
   // Persistent global flags
+  rootCmd.PersistentFlags().BoolVarP(
+    &globalConfig.dryRun,
+    "dry-run",
+    "D",
+    false,
+    "Do not perform any actual change",
+  )
   rootCmd.PersistentFlags().StringVarP(
     &globalConfig.labelsDir,
     "labels-dir",
