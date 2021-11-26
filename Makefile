@@ -60,7 +60,7 @@ GIT_SHA     ?= $(shell git update-index -q --refresh && \
 #
 DOCKER      ?= docker
 DOCKER_RUN  ?= $(DOCKER) run --rm $(1) \
-							 -p $(PORT):$(PORT) \
+               -p $(PORT):$(PORT) \
                -w /go/src/github.com/$(ORG)/$(REPO) \
                -v $(WORKDIR):/go/src/github.com/$(ORG)/$(REPO) \
                $(REGISTRY)/$(ORG)/$(REPO):$(IMAGE_TAG) \
