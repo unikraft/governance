@@ -138,15 +138,6 @@ func (t *Team) Sync() error {
     return fmt.Errorf("could not create or update team: %s", err)
   }
 
-  // Create list of all maintainers
-  var allMaintainerGithubUsernames []string
-  for _, user := range t.Maintainers {
-    allMaintainerGithubUsernames = append(
-      allMaintainerGithubUsernames,
-      user.Github,
-    )
-  }
-
   log.Infof(" >>> Synchronising team members...")
   err = t.ghApi.SyncTeamMembers(
     t.Name,
