@@ -153,6 +153,9 @@ func (t *Team) Sync() error {
     string(user.Member),
     members,
   )
+  if err != nil {
+    return fmt.Errorf("could not synchronise team members: %s", err)
+  }
 
   if len(maintainers) > 0 {
     maintainersTeamName := fmt.Sprintf("%ss-%s", string(user.Maintainer), t.shortName)
