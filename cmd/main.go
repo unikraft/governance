@@ -34,6 +34,7 @@ import (
   "os"
   "fmt"
   "strings"
+  "io/ioutil"
 
   "github.com/spf13/cobra"
   "github.com/spf13/pflag"
@@ -53,6 +54,7 @@ type GlobalConfig struct {
   githubToken    string
   githubSkipSSL  bool
   githubEndpoint string
+  tempDir        string
   ghApi         *github.GithubClient
 }
 
@@ -113,6 +115,18 @@ func NewRootCommand() *cobra.Command {
       }
       if err := initGithubClient(); err != nil {
         return err
+      }
+
+      // Check to create temporary directory
+      tempDir, err := cmd.Flags().GetString("temp-dir")
+      if len(tempDir) == 0 || err != nil {
+        tempDir, err := ioutil.TempDir("", "governance")
+        if err != nil {
+          log.Fatalf("could not create temporary directory: %s", err)
+          os.Exit(1)
+        }
+
+        globalConfig.tempDir = tempDir
       }
 
       return nil
@@ -181,6 +195,13 @@ func NewRootCommand() *cobra.Command {
     "S",
     false,
     "Skip SSL check with GitHub API endpoint",
+  )
+  rootCmd.PersistentFlags().StringVarP(
+    &globalConfig.tempDir,
+    "temp-dir",
+    "j",
+    "",
+    "Temporary directory to store intermediate git clones",
   )
   rootCmd.PersistentFlags().BoolP(
     "verbose",
