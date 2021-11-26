@@ -511,30 +511,29 @@ func popLeastStressedReviewer(subset []string) string {
   return least
 }
 
-func updatePrWithPossibleMaintainersAndReviewers(repo string, prId int, maintainers []string, reviewers []string) error {
+func updatePrWithPossibleMaintainersAndReviewers(repo string, prId int, possibleMaintainers []string, possibleReviewers []string) error {
   log.WithFields(log.Fields{
     "repo": repo,
     "pr_id": prId,
-    // "maintainers": maintainers,
-    // "reviewers": reviewers,
+    // "maintainers": possibleMaintainers,
+    // "reviewers": possibleReviewers,
   }).Infof("Assigning reviewer(s) and maintainer(s) to pull request...")
 
-  if len(maintainers) == 0 {
+  if len(possibleMaintainers) == 0 {
     return fmt.Errorf("could not assign reviewers as none provided")
   }
-  if len(reviewers) == 0 {
+  if len(possibleReviewers) == 0 {
     return fmt.Errorf("could not assign reviewers as none provided")
   }
 
-  currentMaintainers, err := globalConfig.ghApi.GetMaintainersOnPr(repo, prId)
+  newMaintainers, err := globalConfig.ghApi.GetMaintainersOnPr(repo, prId)
   if err != nil {
     return err
   }
-  if len(currentMaintainers) == 0 {
-    var newMaintainers []string
 
+  if len(newMaintainers) == 0 {
     for i := 0; i < syncPrConfig.numMaintainers; i++ {
-      m := popLeastStressedMaintainer(maintainers)
+      m := popLeastStressedMaintainer(possibleMaintainers)
       newMaintainers = append(newMaintainers, m)
 
       log.WithFields(log.Fields{
@@ -551,15 +550,23 @@ func updatePrWithPossibleMaintainersAndReviewers(repo string, prId int, maintain
     }
   }
 
-  currentReviewers, err := globalConfig.ghApi.GetReviewersOnPr(repo, prId)
+  // Remove assigned maintainers from list of possible reviewers (in case there
+  // are any overlaps as we cannot have the same reviewer and approver).
+  for _, maintainer := range newMaintainers {
+    for i, reviewer := range possibleReviewers {
+      if reviewer == maintainer {
+        possibleReviewers = append(possibleReviewers[:i], possibleReviewers[i+1:]...)
+      }
+    }
+  }
+
+  newReviewers, err := globalConfig.ghApi.GetReviewersOnPr(repo, prId)
   if err != nil {
     return err
   }
-  if len(currentReviewers) == 0 {
-    var newReviewers []string
-
+  if len(newReviewers) == 0 {
     for i := 0; i < syncPrConfig.numReviewers; i++ {
-      r := popLeastStressedReviewer(reviewers)
+      r := popLeastStressedReviewer(possibleReviewers)
       newReviewers = append(newReviewers, r)
 
       log.WithFields(log.Fields{
