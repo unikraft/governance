@@ -179,7 +179,7 @@ func (c *GithubClient) CreateOrUpdateTeam(name, description string, parentTeamID
   var team *github.Team
 
   // Check if the team already exists
-  team, err = c.FindTeam(c.Org, name)
+  _, err = c.FindTeam(c.Org, name)
   if err != nil {
     team, _, err = c.Client.Teams.CreateTeam(
       context.TODO(),
