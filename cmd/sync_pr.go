@@ -380,39 +380,42 @@ func doSyncPrCmd(cmd *cobra.Command, args []string) {
       var maintainers []string
       var reviewers []string
 
-      if useCodeownersErr == nil {
-        log.WithFields(log.Fields{
-          "repo": pr.repo.Fullname(),
-        }).Debugf("Repo uses CODEOWNERS")
 
-        // Retrieve a list of modofied files in this PR
-        localDiffFile := path.Join(globalConfig.tempDir, fmt.Sprintf("%s-%d.diff",
-          pr.repo.Fullname(),
-          prId,
-        ))
+      log.WithFields(log.Fields{
+        "repo": pr.repo.Fullname(),
+      }).Debugf("Repo uses CODEOWNERS")
 
-        if _, err := os.Stat(localDiffFile); os.IsNotExist(err) {
-          log.Debugf("Saving %s to %s...", *pr.pr.DiffURL, localDiffFile)
-          err = utils.DownloadFile(localDiffFile, *pr.pr.DiffURL)
-          if err != nil {
-            log.Fatalf("could not download pull request on repo=%s with pr_id=%d diff: %s", pr.repo.Fullname(), prId, err)
-            os.Exit(1)
-          }
-        }
+      // Retrieve a list of modofied files in this PR
+      localDiffFile := path.Join(globalConfig.tempDir, fmt.Sprintf("%s-%d.diff",
+        pr.repo.Fullname(),
+        prId,
+      ))
 
-        d, err := ioutil.ReadFile(localDiffFile)
+      if _, err := os.Stat(localDiffFile); os.IsNotExist(err) {
+        log.Debugf("Saving %s to %s...", *pr.pr.DiffURL, localDiffFile)
+        err = utils.DownloadFile(localDiffFile, *pr.pr.DiffURL)
         if err != nil {
-          log.Fatalf("could not read diff file for request on repo=%s with pr_id=%d diff: %s", pr.repo.Fullname(), prId, err)
+          log.Fatalf("could not download pull request on repo=%s with pr_id=%d diff: %s", pr.repo.Fullname(), prId, err)
           os.Exit(1)
         }
+      }
 
-        diff, err := diffparser.Parse(string(d))
-        if err != nil {
-          log.Fatalf("could not parse diff from pull request on repo=%s with pr_id=%d: %s", pr.repo.Fullname(), prId, err)
-          os.Exit(1)
-        }
+      d, err := ioutil.ReadFile(localDiffFile)
+      if err != nil {
+        log.Fatalf("could not read diff file for request on repo=%s with pr_id=%d diff: %s", pr.repo.Fullname(), prId, err)
+        os.Exit(1)
+      }
 
-        for _, f := range diff.Files {
+      diff, err := diffparser.Parse(string(d))
+      if err != nil {
+        log.Fatalf("could not parse diff from pull request on repo=%s with pr_id=%d: %s", pr.repo.Fullname(), prId, err)
+        os.Exit(1)
+      }
+
+      var labelsToAdd []string
+      for _, f := range diff.Files {
+        // Determine the teams based on the changed files
+        if useCodeownersErr == nil {
           var owners []string
           if len(f.OrigName) > 0 {
             owners = append(owners, co.Owners(f.OrigName)...)
@@ -435,6 +438,36 @@ func doSyncPrCmd(cmd *cobra.Command, args []string) {
 
               pr.teams[codeTeam.Fullname()] = codeTeam
             }
+          }
+        }
+
+        // Determine the labels to add based on the changed files
+        for _, label := range Labels {
+          if containsStr(labelsToAdd, label.Name) {
+            continue
+          }
+
+          if len(f.OrigName) > 0 && label.AppliesTo(repoName, f.OrigName) {
+            labelsToAdd = append(labelsToAdd, label.Name)
+          }
+
+          if !containsStr(labelsToAdd, label.Name) && len(f.NewName) > 0 && label.AppliesTo(repoName, f.NewName) {
+            labelsToAdd = append(labelsToAdd, label.Name)
+          }
+        }
+      }
+
+      if len(labelsToAdd) > 0 {
+        log.WithFields(log.Fields{
+          "repo": repoName,
+          "pr_id": prId,
+          "labels": labelsToAdd,
+        }).Infof("Setting labels on pull request...")
+
+        if !globalConfig.dryRun {
+          err := globalConfig.ghApi.AddLabelsToPr(repoName, prId, labelsToAdd)
+          if err != nil {
+            log.Fatalf("could not add labels repo=%s pr_id=%d: %s", repoName, prId, err)
           }
         }
       }
@@ -471,7 +504,7 @@ func doSyncPrCmd(cmd *cobra.Command, args []string) {
         }
       }
 
-      err := updatePrWithPossibleMaintainersAndReviewers(
+      err = updatePrWithPossibleMaintainersAndReviewers(
         repoName,
         prId,
         maintainers,

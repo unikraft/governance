@@ -446,3 +446,20 @@ func (c *GithubClient) AddReviewersToPr(repo string, prId int, reviewers []strin
 
   return nil
 }
+
+// AddLabelsToPr adds a list of GitHub labels to a PR
+func (c *GithubClient) AddLabelsToPr(repo string, prId int, labels []string) error {
+  _, _, err := c.Client.Issues.AddLabelsToIssue(
+    context.TODO(),
+    c.Org,
+    repo,
+    prId,
+    labels,
+  )
+
+  if err != nil {
+    return fmt.Errorf("could not add labels to PR: %s", err)
+  }
+
+  return nil
+}
