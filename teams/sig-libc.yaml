@@ -30,7 +30,7 @@ repos:
   - name: lib-libjpeg
   - name: lib-libm
   - name: lib-libpng
-  - name: lib-libtff
+  - name: lib-libtiff
   - name: lib-libucontext
   - name: lib-libunwind
   - name: lib-libuuid

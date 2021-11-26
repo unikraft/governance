@@ -16,6 +16,5 @@ repos:
   - name: lib-axtls
   - name: lib-libhogweed
   - name: lib-libsodium
-  - name: lib-tsan1
   - name: lib-mbedtls
   - name: lib-openssl

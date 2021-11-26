@@ -17,5 +17,5 @@ reviewers:
 repos:
   - name: lib-extfs
   - name: lib-fatfs
-  - name: lib-naivefs
+  - name: lib-niavefs
   - name: lib-shfs
