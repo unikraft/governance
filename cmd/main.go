@@ -66,7 +66,6 @@ const (
 )
 
 var (
-  configFile string
   version      = "No version provided"
   commit       = "No commit provided"
   buildTime    = "No build timestamp provided"
