@@ -335,6 +335,11 @@ func doSyncPrCmd(cmd *cobra.Command, args []string) {
     }
   }
 
+  if len(relevantPrs) == 0 {
+    log.Fatalf("could not match pull request(s)")
+    os.Exit(1)
+  }
+
   for repoName, prs := range relevantPrs {
     if len(prs) == 0 && syncPrConfig.prId > 0 {
       log.Fatalf("could not find pr with id=%d for repo=%s", syncPrConfig.prId, repoName)
