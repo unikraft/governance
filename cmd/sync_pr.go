@@ -166,7 +166,7 @@ func doSyncPrCmd(cmd *cobra.Command, args []string) {
       repoDirs[r.Fullname()] = args[0]
 
     // Check to determine if provided argument is a remote git repo
-    } else if uri, err := url.ParseRequestURI(args[0]); err == nil {
+    } else if uri, err := url.ParseRequestURI(args[0]); err == nil && uri.Scheme != "" && uri.Host != "" {
       basename := filepath.Base(uri.Path)
       r := repo.FindRepoByName(basename, Repos)
       if r == nil {
