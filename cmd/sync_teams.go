@@ -36,7 +36,6 @@ import (
   log "github.com/sirupsen/logrus"
 
   "github.com/unikraft/governance/apis/github"
-  "github.com/unikraft/governance/internal/team"
 )
 
 var (
@@ -50,18 +49,8 @@ var (
 
 // doSyncTeamsCmd starts the main system
 func doSyncTeamsCmd(cmd *cobra.Command, args []string) {
-  teams, err := team.NewListOfTeamsFromPath(
-    globalConfig.ghApi,
-    globalConfig.githubOrg,
-    globalConfig.teamsDir,
-  )
-  if err != nil {
-    log.Fatalf("could not parse teams: %s", err)
-    os.Exit(1)
-  }
-
-  for _, t := range teams {
-    err = t.Sync()
+  for _, t := range Teams {
+    err := t.Sync()
     if err != nil {
       log.Fatalf("could not syncronise team: %s: %s", t.Name, err)
       os.Exit(1)
