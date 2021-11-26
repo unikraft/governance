@@ -41,6 +41,7 @@ import (
   log "github.com/sirupsen/logrus"
 
   "github.com/unikraft/governance/apis/github"
+  "github.com/unikraft/governance/internal/team"
 )
 
 type GlobalConfig struct {
@@ -67,6 +68,9 @@ var (
   buildTime    = "No build timestamp provided"
   globalConfig = &GlobalConfig{}
   rootCmd *cobra.Command
+
+  // Global lists of populated definitions
+  Teams []*team.Team
 )
 
 // Build the cobra command that handles our command line tool.
@@ -103,7 +107,7 @@ func NewRootCommand() *cobra.Command {
       if err := initLogging(verbose); err != nil {
         return err
       }
-      if err := dirChecks(); err != nil {
+      if err := loadDefinitions(); err != nil {
         return err
       }
       if err := initGithubClient(); err != nil {
@@ -210,9 +214,16 @@ func initLogging(verbose bool) error {
   return nil
 }
 
-func dirChecks() error {
-  if _, err := os.Stat(globalConfig.teamsDir); os.IsNotExist(err) {
-    return fmt.Errorf("could not read find teams directory: %s", err)
+func loadDefinitions() error {
+  var err error
+
+  Teams, err = team.NewListOfTeamsFromPath(
+    globalConfig.ghApi,
+    globalConfig.githubOrg,
+    globalConfig.teamsDir,
+  )
+  if err != nil {
+    return fmt.Errorf("could not populate teams: %s", err)
   }
 
   return nil
