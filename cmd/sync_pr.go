@@ -318,6 +318,11 @@ func doSyncPrCmd(cmd *cobra.Command, args []string) {
         continue
       }
 
+      // Ignore draft PRs
+      if *pr.Draft {
+        continue
+      }
+
       if _, ok := relevantPrs[r.repo.Fullname()]; !ok {
         relevantPrs[r.repo.Fullname()] = make(map[int]*PullRequest)
       }
