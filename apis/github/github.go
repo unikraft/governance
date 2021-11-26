@@ -404,6 +404,29 @@ func (c *GithubClient) GetReviewersOnPr(repo string, prId int) ([]string, error)
   return reviewers, err
 }
 
+// GetReviewUsersOnPr retrieves a list of usernames of provided reviews for a
+// particular PR
+func (c *GithubClient) GetReviewUsersOnPr(repo string, prId int) ([]string, error) {
+  reviews, _, err := c.Client.PullRequests.ListReviews(
+    context.TODO(),
+    c.Org,
+    repo,
+    prId,
+    &github.ListOptions{},
+  )
+  if err != nil {
+    return nil, err
+  }
+
+  var reviewers []string
+
+  for _, review := range reviews {
+    reviewers = append(reviewers, *review.User.Login)
+  }
+
+  return reviewers, err
+}
+
 // AddReviewersToPr adds a list of GitHub usernames as reviewers to a PR
 func (c *GithubClient) AddReviewersToPr(repo string, prId int, reviewers []string) error {
   _, _, err := c.Client.PullRequests.RequestReviewers(

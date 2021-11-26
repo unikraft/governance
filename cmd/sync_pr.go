@@ -560,12 +560,30 @@ func updatePrWithPossibleMaintainersAndReviewers(repo string, prId int, possible
     }
   }
 
-  reviewers, err := globalConfig.ghApi.GetReviewersOnPr(repo, prId)
+  log.WithFields(log.Fields{
+    "repo": repo,
+    "pr_id": prId,
+    "maintainers": maintainers,
+  }).Debugf("Assigned maintainers")
+
+  var reviewers []string
+
+  // Run a check to see if the PR has already received reviews
+  r, _ := globalConfig.ghApi.GetReviewUsersOnPr(repo, prId)
+  if len(r) > 0 {
+    reviewers = append(reviewers, r...)
+  }
+
+  r, err = globalConfig.ghApi.GetReviewersOnPr(repo, prId)
   if err != nil {
     return err
   }
+  if len(r) > 0 {
+    reviewers = append(reviewers, r...)
+  }
+
   if len(reviewers) == 0 {
-    for i := 0; i < syncPrConfig.numReviewers; i++ {
+    for i := len(reviewers); i < syncPrConfig.numReviewers; i++ {
       r := popLeastStressedReviewer(possibleReviewers)
       reviewers = append(reviewers, r)
 
