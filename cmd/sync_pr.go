@@ -361,9 +361,10 @@ func doSyncPrCmd(cmd *cobra.Command, args []string) {
     // Check if we have a copy of the repo locally, we'll use it in the next
     // step when checking CODEOWNERS
     if _, err := os.Stat(localRepo); os.IsNotExist(err) {
-      log.Debugf("Cloning remote git repositeory: %s to %s", args[0], localRepo)
+      r := repo.FindRepoByName(repoName, Repos)
+      log.Debugf("Cloning remote git repositeory: %s to %s", r.Origin, localRepo)
       _, err := git.PlainClone(localRepo, false, &git.CloneOptions{
-        URL: args[0],
+        URL: r.Origin,
       })
       if err != nil {
         log.Fatalf("could not clone repository: %s", err)
