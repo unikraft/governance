@@ -43,6 +43,7 @@ import (
 
   "github.com/unikraft/governance/apis/github"
   "github.com/unikraft/governance/internal/team"
+  "github.com/unikraft/governance/internal/repo"
 )
 
 type GlobalConfig struct {
@@ -74,6 +75,7 @@ var (
 
   // Global lists of populated definitions
   Teams []*team.Team
+  Repos []*repo.Repository
 )
 
 // Build the cobra command that handles our command line tool.
@@ -253,6 +255,15 @@ func loadDefinitions() error {
   )
   if err != nil {
     return fmt.Errorf("could not populate teams: %s", err)
+  }
+
+  Repos, err = repo.NewListOfReposFromPath(
+    globalConfig.ghApi,
+    globalConfig.githubOrg,
+    globalConfig.reposDir,
+  )
+  if err != nil {
+    return fmt.Errorf("could not populate repos: %s", err)
   }
 
   return nil
