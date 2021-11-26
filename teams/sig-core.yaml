@@ -7,12 +7,18 @@ maintainers:
     github: skuenzer
   - name: Alexander Jung
     github: nderjung
-  - name: Felipe Huici
-    github: felipehuici
   - name: Răzvan Deaconescu
     github: razvand
   - name: Marc Rittinghaus
     github: marcrittinghaus
+
+reviewers:
+  - name: Vlad-Andrei Bădoiu
+    github: vladandrew
+  - name: Cezar Craciunoiu
+    github: craciunoiuc
+  - name: Dragoș Argint
+    github: dragosargint
 
 repos:
   - name: unikraft
