@@ -27,5 +27,7 @@ repos:
   - name: lib-http-parser
   - name: lib-lwip
   - name: lib-nginx
+  - name: lib-omniorb
+  - name: lib-omniorbpy
   - name: lib-open62541
   - name: lib-protobuf

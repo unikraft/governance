@@ -93,6 +93,8 @@ repos:
   - name: lib-newlib
   - name: lib-nginx
   - name: lib-nnpack
+  - name: lib-omniorb
+  - name: lib-omniorbpy
   - name: lib-open62541
   - name: lib-openjpeg
   - name: lib-openssl

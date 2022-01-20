@@ -1,0 +1,8 @@
+name: omniorb
+type: lib
+description: Unikraft port of omniORB C++ bindings
+branch_protection_rules:
+  - pattern: staging
+    is_admin_enforced: true
+    required_approving_review_count: 1
+    requires_codeowner_reviews: false
