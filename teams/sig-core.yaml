@@ -19,6 +19,8 @@ reviewers:
     github: craciunoiuc
   - name: Dragoș Argint
     github: dragosargint
+  - name: Andra Paraschiv
+    github: andraprs
 
 repos:
   - name: unikraft
