@@ -11,6 +11,8 @@ maintainers:
 reviewers:
   - name: Daniel Dincă
     github: danield20
+  - name: Andra Paraschiv
+    github: andraprs
 
 repos:
   - name: plat-aws
