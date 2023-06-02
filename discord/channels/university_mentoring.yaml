@@ -1,0 +1,44 @@
+category: University & Mentoring
+private:  false
+channels:
+  - name: upb-en
+    emoji: 🇷🇴
+    description: UPB student & faculty private channel
+    private: true
+    archive: false
+    type:
+      - text
+    roles:
+      - uni-upb
+      - core (I guess)
+  - name: upb-ro
+    emoji: 🇷🇴
+    description: UPB canal privat pentru studenți și facultăți
+    private: true
+    archive: false
+    type:
+      - text
+    roles:
+      - uni-upb
+      - core (I guess)
+    threads:
+      - Masa hackathon, sambata, 11 martie 2023
+      - Hackathon Porto - Ro
+  - name: Masa hackathon, sambata, 11 martie 2023
+    private: false #the thread is accessible to everyone from the parent channel
+    archive: true #let's set it archived 
+    type:
+      - PublicThread
+    roles: 
+      - uni-upb
+      - core
+  - name: Hackathon Porto - Ro
+    private: false
+    archive: true
+    type:
+      - PublicThread
+    roles: 
+      - uni-upb
+      - core
+  - name: gsoc
+    emoji: 
