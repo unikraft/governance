@@ -40,7 +40,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
-	"github.com/unikraft/governance/apis/github"
+	"github.com/unikraft/governance/internal/ghapi"
 	"github.com/unikraft/governance/internal/repo"
 	"github.com/unikraft/governance/internal/user"
 )
@@ -87,7 +87,7 @@ const (
 )
 
 type Team struct {
-	ghApi        *github.GithubClient
+	ghApi        *ghapi.GithubClient
 	Org          string
 	fullname     string
 	Name         string      `yaml:"name,omitempty"`
@@ -155,7 +155,7 @@ func (r *Team) Fullname() string {
 	return r.fullname
 }
 
-func NewTeamFromYAML(ghApi *github.GithubClient, githubOrg, teamsFile string) (*Team, error) {
+func NewTeamFromYAML(ghApi *ghapi.GithubClient, githubOrg, teamsFile string) (*Team, error) {
 	yamlFile, err := ioutil.ReadFile(teamsFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not open yaml file: %s", err)
@@ -202,7 +202,7 @@ func NewTeamFromYAML(ghApi *github.GithubClient, githubOrg, teamsFile string) (*
 	return team, nil
 }
 
-func NewListOfTeamsFromPath(ghApi *github.GithubClient, githubOrg, teamsDir string) ([]*Team, error) {
+func NewListOfTeamsFromPath(ghApi *ghapi.GithubClient, githubOrg, teamsDir string) ([]*Team, error) {
 	teams := make([]*Team, 0)
 
 	files, err := ioutil.ReadDir(teamsDir)

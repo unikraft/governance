@@ -39,7 +39,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/unikraft/governance/apis/github"
+	"github.com/unikraft/governance/internal/ghapi"
 )
 
 type RepoType string
@@ -73,7 +73,7 @@ const (
 )
 
 type Repository struct {
-	ghApi           *github.GithubClient
+	ghApi           *ghapi.GithubClient
 	Type            RepoType `yaml:"type,omitempty"`
 	Origin          string   `yaml:"origin,omitempty"`
 	fullname        string
@@ -145,7 +145,7 @@ func FindRepoByName(a string, repos []*Repository) *Repository {
 	return nil
 }
 
-func NewTeamFromYAML(ghApi *github.GithubClient, githubOrg, reposFile string) (*Repository, error) {
+func NewTeamFromYAML(ghApi *ghapi.GithubClient, githubOrg, reposFile string) (*Repository, error) {
 	yamlFile, err := ioutil.ReadFile(reposFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not open yaml file: %s", err)
@@ -176,7 +176,7 @@ func NewTeamFromYAML(ghApi *github.GithubClient, githubOrg, reposFile string) (*
 	return repo, nil
 }
 
-func NewListOfReposFromPath(ghApi *github.GithubClient, githubOrg, reposDir string) ([]*Repository, error) {
+func NewListOfReposFromPath(ghApi *ghapi.GithubClient, githubOrg, reposDir string) ([]*Repository, error) {
 	repos := make([]*Repository, 0)
 
 	files, err := ioutil.ReadDir(reposDir)

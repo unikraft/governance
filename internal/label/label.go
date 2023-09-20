@@ -38,13 +38,12 @@ import (
 	"time"
 
 	"github.com/bmatcuk/doublestar"
+	"github.com/unikraft/governance/internal/ghapi"
 	"gopkg.in/yaml.v2"
-
-	"github.com/unikraft/governance/apis/github"
 )
 
 type Label struct {
-	ghApi                    *github.GithubClient
+	ghApi                    *ghapi.GithubClient
 	Name                     string        `yaml:"name"`
 	Description              string        `yaml:"description"`
 	Color                    string        `yaml:"color"`
@@ -59,7 +58,7 @@ type Labels struct {
 	Labels []Label `yaml:"labels"`
 }
 
-func NewListOfLabelsFromYAML(ghApi *github.GithubClient, githubOrg, labelsFile string) ([]Label, error) {
+func NewListOfLabelsFromYAML(ghApi *ghapi.GithubClient, githubOrg, labelsFile string) ([]Label, error) {
 	yamlFile, err := ioutil.ReadFile(labelsFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not open yaml file: %s", err)
@@ -87,7 +86,7 @@ func NewListOfLabelsFromYAML(ghApi *github.GithubClient, githubOrg, labelsFile s
 	return labels, nil
 }
 
-func NewListOfLabelsFromPath(ghApi *github.GithubClient, githubOrg, labelsDir string) ([]Label, error) {
+func NewListOfLabelsFromPath(ghApi *ghapi.GithubClient, githubOrg, labelsDir string) ([]Label, error) {
 	labels := make([]Label, 0)
 
 	files, err := ioutil.ReadDir(labelsDir)

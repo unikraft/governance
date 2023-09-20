@@ -42,7 +42,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
-	"github.com/unikraft/governance/apis/github"
+	"github.com/unikraft/governance/internal/ghapi"
 	"github.com/unikraft/governance/internal/label"
 	"github.com/unikraft/governance/internal/repo"
 	"github.com/unikraft/governance/internal/team"
@@ -58,7 +58,7 @@ type GlobalConfig struct {
 	githubSkipSSL  bool
 	githubEndpoint string
 	tempDir        string
-	ghApi          *github.GithubClient
+	ghApi          *ghapi.GithubClient
 }
 
 const (
@@ -318,7 +318,7 @@ func bindFlags(cmd *cobra.Command, v *viper.Viper) {
 }
 
 func initGithubClient() error {
-	ghApi, err := github.NewGithubClient(
+	ghApi, err := ghapi.NewGithubClient(
 		globalConfig.githubOrg,
 		globalConfig.githubToken,
 		globalConfig.githubSkipSSL,
