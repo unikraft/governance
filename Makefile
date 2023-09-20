@@ -103,7 +103,7 @@ $(.PROXY)$(BIN):
 		-ldflags='$(GO_GCFLAGS)' \
 		-ldflags='$(GO_LDFLAGS)' \
 		-o $(DISTDIR)/$@ \
-		$(WORKDIR)/cmd
+		$(WORKDIR)/cmd/$@
 
 .PHONY: container
 container: TARGET ?= build
