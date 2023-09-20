@@ -1,57 +1,73 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// Copyright (c) 2022, Unikraft GmbH and The Unikraft Authors.
+// Licensed under the BSD-3-Clause License (the "License").
+// You may not use this file except in compliance with the License.
+
 package main
 
-// SPDX-License-Identifier: BSD-3-Clause
-//
-// Authors: Alexander Jung <a.jung@lancs.ac.uk>
-//
-// Copyright (c) 2021, Lancaster University.  All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions
-// are met:
-//
-// 1. Redistributions of source code must retain the above copyright
-//    notice, this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-// 3. Neither the name of the copyright holder nor the names of its
-//    contributors may be used to endorse or promote products derived from
-//    this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
 import (
+	"fmt"
 	"os"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/unikraft/governance/internal/config"
+	"github.com/unikraft/governance/internal/ghapi"
+	"github.com/unikraft/governance/internal/team"
+	"kraftkit.sh/cmdfactory"
+	kitcfg "kraftkit.sh/config"
 )
 
-var (
-	syncTeamsCmd = &cobra.Command{
+type SyncTeams struct {
+	teams []*team.Team
+}
+
+func NewSyncTeams() *cobra.Command {
+	cmd, err := cmdfactory.New(&SyncTeams{}, cobra.Command{
 		Use:   "sync-teams",
 		Short: "Synchronise teams",
-		Run:   doSyncTeamsCmd,
+		Annotations: map[string]string{
+			cmdfactory.AnnotationHelpGroup: "main",
+		},
+	})
+	if err != nil {
+		panic(err)
 	}
-)
 
-// doSyncTeamsCmd starts the main system
-func doSyncTeamsCmd(cmd *cobra.Command, args []string) {
-	for _, t := range Teams {
+	return cmd
+}
+
+func (opts *SyncTeams) Pre(cmd *cobra.Command, args []string) error {
+	ctx := cmd.Context()
+	ghApi, err := ghapi.NewGithubClient(
+		kitcfg.G[config.Config](ctx).GithubOrg,
+		kitcfg.G[config.Config](ctx).GithubToken,
+		kitcfg.G[config.Config](ctx).GithubSkipSSL,
+		kitcfg.G[config.Config](ctx).GithubEndpoint,
+	)
+	if err != nil {
+		return err
+	}
+
+	opts.teams, err = team.NewListOfTeamsFromPath(
+		ghApi,
+		kitcfg.G[config.Config](ctx).GithubOrg,
+		kitcfg.G[config.Config](ctx).TeamsDir,
+	)
+	if err != nil {
+		return fmt.Errorf("could not populate teams: %s", err)
+	}
+	return nil
+}
+
+func (opts *SyncTeams) Run(cmd *cobra.Command, args []string) error {
+	for _, t := range opts.teams {
 		err := t.Sync()
 		if err != nil {
 			log.Fatalf("could not syncronise team: %s: %s", t.Name, err)
 			os.Exit(1)
 		}
 	}
+
+	return nil
 }
