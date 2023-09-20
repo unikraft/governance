@@ -1,4 +1,5 @@
 package utils
+
 // SPDX-License-Identifier: BSD-3-Clause
 //
 // Authors: Alexander Jung <a.jung@lancs.ac.uk>
@@ -31,37 +32,37 @@ package utils
 // POSSIBILITY OF SUCH DAMAGE.
 
 import (
-  "os"
-  "io"
-  "fmt"
-  "net/http"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
 )
 
 func DownloadFile(filepath string, url string) error {
-  // Create the file
-  out, err := os.Create(filepath)
-  if err != nil  {
-    return err
-  }
-  defer out.Close()
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
 
-  // Get the data
-  resp, err := http.Get(url)
-  if err != nil {
-    return err
-  }
-  defer resp.Body.Close()
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
 
-  // Check server response
-  if resp.StatusCode != http.StatusOK {
-    return fmt.Errorf("bad status: %s", resp.Status)
-  }
+	// Check server response
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("bad status: %s", resp.Status)
+	}
 
-  // Writer the body to file
-  _, err = io.Copy(out, resp.Body)
-  if err != nil  {
-    return err
-  }
+	// Writer the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
 
-  return nil
+	return nil
 }

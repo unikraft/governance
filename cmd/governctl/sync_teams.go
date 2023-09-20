@@ -1,4 +1,5 @@
 package main
+
 // SPDX-License-Identifier: BSD-3-Clause
 //
 // Authors: Alexander Jung <a.jung@lancs.ac.uk>
@@ -30,27 +31,27 @@ package main
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 import (
-  "os"
+	"os"
 
-  "github.com/spf13/cobra"
-  log "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 var (
-  syncTeamsCmd = &cobra.Command{
-    Use: "sync-teams",
-    Short: "Synchronise teams",
-    Run: doSyncTeamsCmd,
-  }
+	syncTeamsCmd = &cobra.Command{
+		Use:   "sync-teams",
+		Short: "Synchronise teams",
+		Run:   doSyncTeamsCmd,
+	}
 )
 
 // doSyncTeamsCmd starts the main system
 func doSyncTeamsCmd(cmd *cobra.Command, args []string) {
-  for _, t := range Teams {
-    err := t.Sync()
-    if err != nil {
-      log.Fatalf("could not syncronise team: %s: %s", t.Name, err)
-      os.Exit(1)
-    }
-  }
+	for _, t := range Teams {
+		err := t.Sync()
+		if err != nil {
+			log.Fatalf("could not syncronise team: %s: %s", t.Name, err)
+			os.Exit(1)
+		}
+	}
 }

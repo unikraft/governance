@@ -8,14 +8,14 @@
 // modification, are permitted provided that the following conditions
 // are met:
 //
-// 1. Redistributions of source code must retain the above copyright
-//    notice, this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-// 3. Neither the name of the copyright holder nor the names of its
-//    contributors may be used to endorse or promote products derived from
-//    this software without specific prior written permission.
+//  1. Redistributions of source code must retain the above copyright
+//     notice, this list of conditions and the following disclaimer.
+//  2. Redistributions in binary form must reproduce the above copyright
+//     notice, this list of conditions and the following disclaimer in the
+//     documentation and/or other materials provided with the distribution.
+//  3. Neither the name of the copyright holder nor the names of its
+//     contributors may be used to endorse or promote products derived from
+//     this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -32,36 +32,36 @@ package utils
 
 // Difference finds the diff between two lists of strings
 func Difference(a, b []string) []string {
-  var diff []string
-  mb := make(map[string]struct{}, len(b))
+	var diff []string
+	mb := make(map[string]struct{}, len(b))
 
-  for _, x := range b {
-    mb[x] = struct{}{}
-  }
+	for _, x := range b {
+		mb[x] = struct{}{}
+	}
 
-  for _, x := range a {
-    if _, found := mb[x]; !found {
-      diff = append(diff, x)
-    }
-  }
+	for _, x := range a {
+		if _, found := mb[x]; !found {
+			diff = append(diff, x)
+		}
+	}
 
-  return diff
+	return diff
 }
 
 // Intersect finds the intersection between two lists of strings
 func Intersect(a, b []string) []string {
-  var diff []string
-  mb := make(map[string]struct{}, len(b))
+	var diff []string
+	mb := make(map[string]struct{}, len(b))
 
-  for _, x := range b {
-    mb[x] = struct{}{}
-  }
+	for _, x := range b {
+		mb[x] = struct{}{}
+	}
 
-  for _, x := range a {
-    if _, found := mb[x]; found {
-      diff = append(diff, x)
-    }
-  }
+	for _, x := range a {
+		if _, found := mb[x]; found {
+			diff = append(diff, x)
+		}
+	}
 
-  return diff
+	return diff
 }

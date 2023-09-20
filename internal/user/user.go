@@ -1,4 +1,5 @@
 package user
+
 // SPDX-License-Identifier: BSD-3-Clause
 //
 // Authors: Alexander Jung <a.jung@lancs.ac.uk>
@@ -33,16 +34,16 @@ package user
 type UserRole string
 
 const (
-  Admin      UserRole = "admin"
-  Maintainer UserRole = "maintainer"
-  Reviewer   UserRole = "reviewer"
-  Member     UserRole = "member"
+	Admin      UserRole = "admin"
+	Maintainer UserRole = "maintainer"
+	Reviewer   UserRole = "reviewer"
+	Member     UserRole = "member"
 )
 
 type User struct {
-  Name    string   `yaml:"name,omitempty"`
-  Email   string   `yaml:"email,omitempty"`
-  Github  string   `yaml:"github,omitempty"`
-  Discord string   `yaml:"discord,omitempty"`
-  Role    UserRole `yaml:"role,omitempty"`
+	Name    string   `yaml:"name,omitempty"`
+	Email   string   `yaml:"email,omitempty"`
+	Github  string   `yaml:"github,omitempty"`
+	Discord string   `yaml:"discord,omitempty"`
+	Role    UserRole `yaml:"role,omitempty"`
 }
