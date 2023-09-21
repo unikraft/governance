@@ -14,6 +14,7 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/google/go-github/v32/github"
@@ -197,6 +198,8 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 				Info("using repository")
 
 			basename := filepath.Base(uri.Path)
+			basename = strings.TrimSuffix(basename, ".git")
+
 			r := repo.FindRepoByName(basename, opts.repos)
 			if r == nil {
 				log.G(ctx).Fatalf("unknown repo: %s", args[0])
