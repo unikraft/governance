@@ -3,6 +3,7 @@ module github.com/unikraft/governance
 go 1.21
 
 require (
+	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/bmatcuk/doublestar v1.3.4
 	github.com/google/go-github/v32 v32.1.0
 	github.com/hairyhenderson/go-codeowners v0.2.2

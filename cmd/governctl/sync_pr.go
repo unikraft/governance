@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/google/go-github/v32/github"
 	"github.com/hairyhenderson/go-codeowners"
 	"github.com/spf13/cobra"
@@ -70,6 +71,10 @@ func NewSyncPR() *cobra.Command {
 		Annotations: map[string]string{
 			cmdfactory.AnnotationHelpGroup: "main",
 		},
+		Example: heredoc.Docf(`
+    # Synchronize PR #1000
+    governctl sync-pr https://github.com/unikraft/unikraft 1000
+    `),
 	})
 	if err != nil {
 		panic(err)
