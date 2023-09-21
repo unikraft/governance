@@ -3,7 +3,7 @@
 // Licensed under the BSD-3-Clause License (the "License").
 // You may not use this file except in compliance with the License.
 
-package main
+package team
 
 import (
 	"fmt"
@@ -18,16 +18,16 @@ import (
 	kitcfg "kraftkit.sh/config"
 )
 
-type SyncTeams struct {
+type Sync struct {
 	teams []*team.Team
 }
 
-func NewSyncTeams() *cobra.Command {
-	cmd, err := cmdfactory.New(&SyncTeams{}, cobra.Command{
-		Use:   "sync-teams",
+func NewSync() *cobra.Command {
+	cmd, err := cmdfactory.New(&Sync{}, cobra.Command{
+		Use:   "sync",
 		Short: "Synchronise teams",
 		Annotations: map[string]string{
-			cmdfactory.AnnotationHelpGroup: "main",
+			cmdfactory.AnnotationHelpGroup: "team",
 		},
 	})
 	if err != nil {
@@ -37,7 +37,7 @@ func NewSyncTeams() *cobra.Command {
 	return cmd
 }
 
-func (opts *SyncTeams) Pre(cmd *cobra.Command, args []string) error {
+func (opts *Sync) Pre(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 	ghApi, err := ghapi.NewGithubClient(
 		ctx,
@@ -61,7 +61,7 @@ func (opts *SyncTeams) Pre(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (opts *SyncTeams) Run(cmd *cobra.Command, args []string) error {
+func (opts *Sync) Run(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 
 	for _, t := range opts.teams {

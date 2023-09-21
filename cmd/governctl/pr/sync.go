@@ -3,7 +3,7 @@
 // Licensed under the BSD-3-Clause License (the "License").
 // You may not use this file except in compliance with the License.
 
-package main
+package pr
 
 import (
 	"context"
@@ -46,7 +46,7 @@ type repoTeams struct {
 	teams map[string]*team.Team
 }
 
-type SyncPR struct {
+type Sync struct {
 	NumMaintainers int  `long:"num-maintainers" short:"A" usage:"Number of maintainers for the PR" default:"1"`
 	NumReviewers   int  `long:"num-reviewers" short:"R" usage:"Number of reviewers for the PR" default:"1"`
 	NoLabels       bool `long:"no-labels" usage:"Do not set labels on this PR"`
@@ -64,17 +64,17 @@ type SyncPR struct {
 	labels             []label.Label
 }
 
-func NewSyncPR() *cobra.Command {
-	cmd, err := cmdfactory.New(&SyncPR{}, cobra.Command{
-		Use:   "sync-pr [OPTIONS] [REPO [PRID]]",
+func NewSync() *cobra.Command {
+	cmd, err := cmdfactory.New(&Sync{}, cobra.Command{
+		Use:   "sync [OPTIONS] REPO PRID",
 		Short: "Synchronise one or many Pull Requests",
 		Args:  cobra.MaximumNArgs(2),
 		Annotations: map[string]string{
-			cmdfactory.AnnotationHelpGroup: "main",
+			cmdfactory.AnnotationHelpGroup: "pr",
 		},
 		Example: heredoc.Docf(`
     # Synchronize PR #1000
-    governctl sync-pr https://github.com/unikraft/unikraft 1000
+    governctl pr sync https://github.com/unikraft/unikraft 1000
     `),
 	})
 	if err != nil {
@@ -84,7 +84,7 @@ func NewSyncPR() *cobra.Command {
 	return cmd
 }
 
-func (opts *SyncPR) Pre(cmd *cobra.Command, args []string) error {
+func (opts *Sync) Pre(cmd *cobra.Command, args []string) error {
 	var err error
 	ctx := cmd.Context()
 
@@ -133,7 +133,7 @@ func (opts *SyncPR) Pre(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
+func (opts *Sync) Run(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 
 	if len(args) > 0 {
@@ -557,7 +557,7 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (opts *SyncPR) popLeastStressedMaintainer(subset []string) string {
+func (opts *Sync) popLeastStressedMaintainer(subset []string) string {
 	maintainers := make(map[string]int)
 
 	for _, username := range subset {
@@ -575,7 +575,7 @@ func (opts *SyncPR) popLeastStressedMaintainer(subset []string) string {
 	return least
 }
 
-func (opts *SyncPR) popLeastStressedReviewer(subset []string) string {
+func (opts *Sync) popLeastStressedReviewer(subset []string) string {
 	reviewers := make(map[string]int)
 
 	for _, username := range subset {
@@ -593,7 +593,7 @@ func (opts *SyncPR) popLeastStressedReviewer(subset []string) string {
 	return least
 }
 
-func (opts *SyncPR) updatePrWithPossibleMaintainersAndReviewers(ctx context.Context, repo string, prId int, possibleMaintainers []string, possibleReviewers []string) error {
+func (opts *Sync) updatePrWithPossibleMaintainersAndReviewers(ctx context.Context, repo string, prId int, possibleMaintainers []string, possibleReviewers []string) error {
 	log.G(ctx).
 		WithField("repo", repo).
 		WithField("pr_id", prId).

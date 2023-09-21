@@ -16,6 +16,8 @@ import (
 	kitcfg "kraftkit.sh/config"
 	"kraftkit.sh/log"
 
+	"github.com/unikraft/governance/cmd/governctl/pr"
+	"github.com/unikraft/governance/cmd/governctl/team"
 	"github.com/unikraft/governance/internal/config"
 )
 
@@ -34,9 +36,11 @@ func New() *cobra.Command {
 	}
 
 	// Subcommands
-	cmd.AddGroup(&cobra.Group{ID: "main", Title: "COMMANDS"})
-	cmd.AddCommand(NewSyncTeams())
-	cmd.AddCommand(NewSyncPR())
+	cmd.AddGroup(&cobra.Group{ID: "pr", Title: "PULL REQUEST COMMANDS"})
+	cmd.AddCommand(pr.New())
+
+	cmd.AddGroup(&cobra.Group{ID: "team", Title: "TEAM COMMANDS"})
+	cmd.AddCommand(team.New())
 
 	return cmd
 }
