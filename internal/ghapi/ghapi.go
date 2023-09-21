@@ -9,12 +9,12 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 
 	"github.com/google/go-github/v32/github"
 	"golang.org/x/oauth2"
+	"kraftkit.sh/log"
 
 	"github.com/unikraft/governance/utils"
 )
@@ -28,12 +28,12 @@ type GithubClient struct {
 
 // Github interface representing the desired functions for this resource.
 type Github interface {
-	FindTeam(org string, team string) (*github.Team, error)
-	CreateOrUpdateTeam(name, description string, parentTeamID int64, privacy *string, maintainers, repos []string) (*github.Team, error)
+	FindTeam(ctx context.Context, org string, team string) (*github.Team, error)
+	CreateOrUpdateTeam(ctx context.Context, name, description string, parentTeamID int64, privacy *string, maintainers, repos []string) (*github.Team, error)
 }
 
 var (
-	userCache map[string]*github.User
+	userCache     map[string]*github.User
 )
 
 // NewGitHubClient for creating a new instance of the client.
@@ -89,7 +89,7 @@ func NewGithubClient(org string, accessToken string, skipSSL bool, githubEndpoin
 
 // FindTeam takes an organization name and team name and returns a detailed
 // struct with information about the team.
-func (c *GithubClient) FindTeam(org string, team string) (*github.Team, error) {
+func (c *GithubClient) FindTeam(ctx context.Context, org string, team string) (*github.Team, error) {
 	opts := &github.ListOptions{}
 
 	for {
@@ -116,7 +116,7 @@ func (c *GithubClient) FindTeam(org string, team string) (*github.Team, error) {
 
 // FindUser takes a Github username and returns a detaled object with
 // information about the user.
-func (c *GithubClient) FindUser(username string) (*github.User, error) {
+func (c *GithubClient) FindUser(ctx context.Context, username string) (*github.User, error) {
 	if user, ok := userCache[username]; ok {
 		return user, nil
 	}
@@ -134,7 +134,7 @@ func (c *GithubClient) FindUser(username string) (*github.User, error) {
 	return user, nil
 }
 
-func (c *GithubClient) CreateOrUpdateTeam(name, description string, parentTeamID int64, privacy *string, maintainers, repos []string) (*github.Team, error) {
+func (c *GithubClient) CreateOrUpdateTeam(ctx context.Context, name, description string, parentTeamID int64, privacy *string, maintainers, repos []string) (*github.Team, error) {
 	newTeam := github.NewTeam{
 		Name:        name,
 		Description: &description,
@@ -154,7 +154,7 @@ func (c *GithubClient) CreateOrUpdateTeam(name, description string, parentTeamID
 	var team *github.Team
 
 	// Check if the team already exists
-	_, err = c.FindTeam(c.Org, name)
+	_, err = c.FindTeam(ctx, c.Org, name)
 	if err != nil {
 		team, _, err = c.Client.Teams.CreateTeam(
 			context.TODO(),
@@ -182,7 +182,7 @@ func (c *GithubClient) CreateOrUpdateTeam(name, description string, parentTeamID
 	return team, nil
 }
 
-func (c *GithubClient) ListOrgMembers(role string) ([]string, error) {
+func (c *GithubClient) ListOrgMembers(ctx context.Context, role string) ([]string, error) {
 	var members []string
 
 	users, _, err := c.Client.Organizations.ListMembers(
@@ -204,7 +204,7 @@ func (c *GithubClient) ListOrgMembers(role string) ([]string, error) {
 	return members, nil
 }
 
-func (c *GithubClient) SyncTeamMembers(team, role string, members []string) error {
+func (c *GithubClient) SyncTeamMembers(ctx context.Context, team, role string, members []string) error {
 	var allCurrentUsernames []string
 	opts := github.ListOptions{}
 
@@ -237,7 +237,7 @@ func (c *GithubClient) SyncTeamMembers(team, role string, members []string) erro
 
 	if len(usernamesToRemove) > 0 {
 		for _, user := range usernamesToRemove {
-			log.Printf(" >>>>>> Removing: %s...", user)
+			log.G(ctx).Infof("removing: %s...", user)
 			resp, err := c.Client.Teams.RemoveTeamMembershipBySlug(
 				context.TODO(),
 				c.Org,
@@ -256,7 +256,7 @@ func (c *GithubClient) SyncTeamMembers(team, role string, members []string) erro
 
 	if len(usernamesToAdd) > 0 {
 		for _, user := range usernamesToAdd {
-			log.Printf(" >>>>>> Adding: %s...", user)
+			log.G(ctx).Infof("adding: %s...", user)
 			_, _, err := c.Client.Teams.AddTeamMembershipBySlug(
 				context.TODO(),
 				c.Org,
@@ -276,7 +276,7 @@ func (c *GithubClient) SyncTeamMembers(team, role string, members []string) erro
 }
 
 // ListPullRequests returns the list of pull requests for the configured repo
-func (c *GithubClient) ListOpenPullRequests(repo string) ([]*github.PullRequest, error) {
+func (c *GithubClient) ListOpenPullRequests(ctx context.Context, repo string) ([]*github.PullRequest, error) {
 	var allPrs []*github.PullRequest
 	opts := github.ListOptions{}
 
@@ -308,7 +308,7 @@ func (c *GithubClient) ListOpenPullRequests(repo string) ([]*github.PullRequest,
 
 // GetPullRequest returns the specific pull request given its ID relative to the
 // configured repo
-func (c *GithubClient) GetPullRequest(repo string, prId int) (*github.PullRequest, error) {
+func (c *GithubClient) GetPullRequest(ctx context.Context, repo string, prId int) (*github.PullRequest, error) {
 	pull, _, err := c.Client.PullRequests.Get(
 		context.TODO(),
 		c.Org,
@@ -325,8 +325,8 @@ func (c *GithubClient) GetPullRequest(repo string, prId int) (*github.PullReques
 
 // GetMaintainersOnPr retrieves a list of GitHub usernames attached as the
 // "assignee" (or maintainer) of a particular PR
-func (c *GithubClient) GetMaintainersOnPr(repo string, prId int) ([]string, error) {
-	pull, err := c.GetPullRequest(repo, prId)
+func (c *GithubClient) GetMaintainersOnPr(ctx context.Context, repo string, prId int) ([]string, error) {
+	pull, err := c.GetPullRequest(ctx, repo, prId)
 	if err != nil {
 		return nil, err
 	}
@@ -341,7 +341,7 @@ func (c *GithubClient) GetMaintainersOnPr(repo string, prId int) ([]string, erro
 }
 
 // AddMaintainersToPr adds a list of GitHub usernames as "assignee" to a PR
-func (c *GithubClient) AddMaintainersToPr(repo string, prId int, maintainers []string) error {
+func (c *GithubClient) AddMaintainersToPr(ctx context.Context, repo string, prId int, maintainers []string) error {
 	_, _, err := c.Client.Issues.AddAssignees(
 		context.TODO(),
 		c.Org,
@@ -358,7 +358,7 @@ func (c *GithubClient) AddMaintainersToPr(repo string, prId int, maintainers []s
 
 // GetReviewersOnPr retrieves a lsit of GitHub usernames attached as the
 // reviewer for a particular PR
-func (c *GithubClient) GetReviewersOnPr(repo string, prId int) ([]string, error) {
+func (c *GithubClient) GetReviewersOnPr(ctx context.Context, repo string, prId int) ([]string, error) {
 	ghReviewers, _, err := c.Client.PullRequests.ListReviewers(
 		context.TODO(),
 		c.Org,
@@ -381,7 +381,7 @@ func (c *GithubClient) GetReviewersOnPr(repo string, prId int) ([]string, error)
 
 // GetReviewUsersOnPr retrieves a list of usernames of provided reviews for a
 // particular PR
-func (c *GithubClient) GetReviewUsersOnPr(repo string, prId int) ([]string, error) {
+func (c *GithubClient) GetReviewUsersOnPr(ctx context.Context, repo string, prId int) ([]string, error) {
 	reviews, _, err := c.Client.PullRequests.ListReviews(
 		context.TODO(),
 		c.Org,
@@ -403,7 +403,7 @@ func (c *GithubClient) GetReviewUsersOnPr(repo string, prId int) ([]string, erro
 }
 
 // AddReviewersToPr adds a list of GitHub usernames as reviewers to a PR
-func (c *GithubClient) AddReviewersToPr(repo string, prId int, reviewers []string) error {
+func (c *GithubClient) AddReviewersToPr(ctx context.Context, repo string, prId int, reviewers []string) error {
 	_, _, err := c.Client.PullRequests.RequestReviewers(
 		context.TODO(),
 		c.Org,
@@ -423,7 +423,7 @@ func (c *GithubClient) AddReviewersToPr(repo string, prId int, reviewers []strin
 }
 
 // AddLabelsToPr adds a list of GitHub labels to a PR
-func (c *GithubClient) AddLabelsToPr(repo string, prId int, labels []string) error {
+func (c *GithubClient) AddLabelsToPr(ctx context.Context, repo string, prId int, labels []string) error {
 	_, _, err := c.Client.Issues.AddLabelsToIssue(
 		context.TODO(),
 		c.Org,

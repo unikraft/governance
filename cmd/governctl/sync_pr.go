@@ -281,14 +281,14 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 	log.G(ctx).Debugf("Determining the workload of all maintainers and reviewers...")
 	for _, r := range repoTeamsMap {
 		// Get a list of all open PRs
-		prs, err := opts.ghApi.ListOpenPullRequests(r.repo.Fullname())
+		prs, err := opts.ghApi.ListOpenPullRequests(ctx, r.repo.Fullname())
 		if err != nil {
 			log.G(ctx).Fatalf("could not retrieve pull requests: %s", err)
 			os.Exit(1)
 		}
 
 		for _, pr := range prs {
-			maintainers, err := opts.ghApi.GetMaintainersOnPr(r.repo.Fullname(), *pr.Number)
+			maintainers, err := opts.ghApi.GetMaintainersOnPr(ctx, r.repo.Fullname(), *pr.Number)
 			if err != nil {
 				log.G(ctx).Fatalf("could not get maintainers on pull requests: %s", err)
 				os.Exit(1)
@@ -302,7 +302,7 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 				opts.maintainerWorkload[maintainer]++
 			}
 
-			reviewers, err := opts.ghApi.GetReviewersOnPr(r.repo.Fullname(), *pr.Number)
+			reviewers, err := opts.ghApi.GetReviewersOnPr(ctx, r.repo.Fullname(), *pr.Number)
 			if err != nil {
 				log.G(ctx).Fatalf("could not get reviewers on pull requests: %s", err)
 				os.Exit(1)
@@ -323,7 +323,7 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 	log.G(ctx).Debugf("Calculating lists of potential reviewers and maintainers...")
 	for _, r := range repoTeamsMap {
 		// Get a list of all open PRs
-		prs, err := opts.ghApi.ListOpenPullRequests(r.repo.Fullname())
+		prs, err := opts.ghApi.ListOpenPullRequests(ctx, r.repo.Fullname())
 		if err != nil {
 			log.G(ctx).Fatalf("could not retrieve pull requests: %s", err)
 			os.Exit(1)
@@ -481,7 +481,7 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 					Infof("Setting labels on pull request...")
 
 				if !kitcfg.G[config.Config](ctx).DryRun {
-					err := opts.ghApi.AddLabelsToPr(repoName, prId, labelsToAdd)
+					err := opts.ghApi.AddLabelsToPr(ctx, repoName, prId, labelsToAdd)
 					if err != nil {
 						log.G(ctx).Fatalf("could not add labels repo=%s pr_id=%d: %s", repoName, prId, err)
 					}
@@ -588,7 +588,7 @@ func (opts *SyncPR) updatePrWithPossibleMaintainersAndReviewers(ctx context.Cont
 		return fmt.Errorf("could not assign reviewers as none provided")
 	}
 
-	maintainers, err := opts.ghApi.GetMaintainersOnPr(repo, prId)
+	maintainers, err := opts.ghApi.GetMaintainersOnPr(ctx, repo, prId)
 	if err != nil {
 		return err
 	}
@@ -604,7 +604,7 @@ func (opts *SyncPR) updatePrWithPossibleMaintainersAndReviewers(ctx context.Cont
 		}
 
 		if !kitcfg.G[config.Config](ctx).DryRun {
-			err := opts.ghApi.AddMaintainersToPr(repo, prId, maintainers)
+			err := opts.ghApi.AddMaintainersToPr(ctx, repo, prId, maintainers)
 			if err != nil {
 				log.G(ctx).Fatalf("could not add maintainers to repo=%s pr_id=%d: %s", repo, prId, err)
 				os.Exit(1)
@@ -631,12 +631,12 @@ func (opts *SyncPR) updatePrWithPossibleMaintainersAndReviewers(ctx context.Cont
 	var reviewers []string
 
 	// Run a check to see if the PR has already received reviews
-	r, _ := opts.ghApi.GetReviewUsersOnPr(repo, prId)
+	r, _ := opts.ghApi.GetReviewUsersOnPr(ctx, repo, prId)
 	if len(r) > 0 {
 		reviewers = append(reviewers, r...)
 	}
 
-	r, err = opts.ghApi.GetReviewersOnPr(repo, prId)
+	r, err = opts.ghApi.GetReviewersOnPr(ctx, repo, prId)
 	if err != nil {
 		return err
 	}
@@ -655,7 +655,7 @@ func (opts *SyncPR) updatePrWithPossibleMaintainersAndReviewers(ctx context.Cont
 		}
 
 		if !kitcfg.G[config.Config](ctx).DryRun {
-			err := opts.ghApi.AddReviewersToPr(repo, prId, reviewers)
+			err := opts.ghApi.AddReviewersToPr(ctx, repo, prId, reviewers)
 			if err != nil {
 				log.G(ctx).Fatalf("could not add reviewer to repo=%s pr_id=%d: %s", repo, prId, err)
 				os.Exit(1)

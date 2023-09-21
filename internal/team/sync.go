@@ -6,16 +6,17 @@
 package team
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	gh "github.com/google/go-github/v32/github"
-	log "github.com/sirupsen/logrus"
+	"kraftkit.sh/log"
 
 	"github.com/unikraft/governance/internal/user"
 )
 
-func (t *Team) Sync() error {
+func (t *Team) Sync(ctx context.Context) error {
 	if t.hasSynced {
 		return nil
 	}
@@ -49,19 +50,19 @@ func (t *Team) Sync() error {
 		if t.ParentTeam != nil {
 			// Synchronise the parent now so that information for the child is correct
 			// and up-to-date.
-			err = t.ParentTeam.Sync()
+			err = t.ParentTeam.Sync(ctx)
 			if err != nil {
 				return fmt.Errorf("could not synchronize parent: %s", err)
 			}
 		}
 
-		parentGithubTeam, err = t.ghApi.FindTeam(t.Org, t.Parent)
+		parentGithubTeam, err = t.ghApi.FindTeam(ctx, t.Org, t.Parent)
 		if err != nil {
 			return err
 		}
 	}
 
-	log.Infof("Synchronising @%s/%s...", t.Org, t.Name)
+	log.G(ctx).Infof("synchronising @%s/%s...", t.Org, t.Name)
 
 	var maintainers []string
 	var reviewers []string
@@ -100,8 +101,9 @@ func (t *Team) Sync() error {
 	}
 
 	// Check if the team already exists, if it does not, we must create it.
-	log.Infof(" >>> Updating team details...")
+	log.G(ctx).Infof("updating team details...")
 	githubTeam, err = t.ghApi.CreateOrUpdateTeam(
+		ctx,
 		t.Name,
 		t.Description,
 		parentTeamID,
@@ -113,8 +115,9 @@ func (t *Team) Sync() error {
 		return fmt.Errorf("could not create or update team: %s", err)
 	}
 
-	log.Infof(" >>> Synchronising team members...")
+	log.G(ctx).Infof("synchronising team members...")
 	err = t.ghApi.SyncTeamMembers(
+		ctx,
 		t.Name,
 		string(user.Member),
 		members,
@@ -125,11 +128,12 @@ func (t *Team) Sync() error {
 
 	if len(maintainers) > 0 {
 		maintainersTeamName := fmt.Sprintf("%ss-%s", string(user.Maintainer), t.shortName)
-		log.Infof("Synchronising @%s/%s...", t.Org, maintainersTeamName)
+		log.G(ctx).Infof("Synchronising @%s/%s...", t.Org, maintainersTeamName)
 
 		// Create or update a sub-team with list of maintainers
-		log.Infof(" >>> Updating team details...")
+		log.G(ctx).Infof("updating team details...")
 		_, err := t.ghApi.CreateOrUpdateTeam(
+			ctx,
 			maintainersTeamName,
 			fmt.Sprintf("%s maintainers", t.Name),
 			*githubTeam.ID,
@@ -142,8 +146,9 @@ func (t *Team) Sync() error {
 		}
 
 		// Add and remove these usernames from the second-level `maintainers-` group
-		log.Infof(" >>> Synchronising team members...")
+		log.G(ctx).Infof("synchronising team members...")
 		err = t.ghApi.SyncTeamMembers(
+			ctx,
 			maintainersTeamName,
 			string(user.Maintainer),
 			maintainers,
@@ -155,11 +160,12 @@ func (t *Team) Sync() error {
 
 	if len(reviewers) > 0 {
 		reviewersTeamName := fmt.Sprintf("%ss-%s", string(user.Reviewer), t.shortName)
-		log.Infof("Synchronising @%s/%s...", t.Org, reviewersTeamName)
+		log.G(ctx).Infof("Synchronising @%s/%s...", t.Org, reviewersTeamName)
 
 		// Create or update a sub-team with list of reviewers
-		log.Infof(" >>> Updating team details...")
+		log.G(ctx).Infof("updating team details...")
 		_, err := t.ghApi.CreateOrUpdateTeam(
+			ctx,
 			reviewersTeamName,
 			fmt.Sprintf("%s reviewers", t.Name),
 			*githubTeam.ID,
@@ -172,8 +178,9 @@ func (t *Team) Sync() error {
 		}
 
 		// Add and remove these usernames from the second-level `reviewers-` group
-		log.Infof(" >>> Synchronising team members...")
+		log.G(ctx).Infof("synchronising team members...")
 		err = t.ghApi.SyncTeamMembers(
+			ctx,
 			reviewersTeamName,
 			string(user.Member),
 			reviewers,

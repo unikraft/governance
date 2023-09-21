@@ -61,8 +61,10 @@ func (opts *SyncTeams) Pre(cmd *cobra.Command, args []string) error {
 }
 
 func (opts *SyncTeams) Run(cmd *cobra.Command, args []string) error {
+	ctx := cmd.Context()
+
 	for _, t := range opts.teams {
-		err := t.Sync()
+		err := t.Sync(ctx)
 		if err != nil {
 			log.Fatalf("could not syncronise team: %s: %s", t.Name, err)
 			os.Exit(1)
