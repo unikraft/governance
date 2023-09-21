@@ -88,6 +88,7 @@ func (opts *SyncPR) Pre(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 
 	opts.ghApi, err = ghapi.NewGithubClient(
+		ctx,
 		kitcfg.G[config.Config](ctx).GithubOrg,
 		kitcfg.G[config.Config](ctx).GithubToken,
 		kitcfg.G[config.Config](ctx).GithubSkipSSL,

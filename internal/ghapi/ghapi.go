@@ -37,9 +37,7 @@ var (
 )
 
 // NewGitHubClient for creating a new instance of the client.
-func NewGithubClient(org string, accessToken string, skipSSL bool, githubEndpoint string) (*GithubClient, error) {
-	var ctx context.Context
-
+func NewGithubClient(ctx context.Context, org string, accessToken string, skipSSL bool, githubEndpoint string) (*GithubClient, error) {
 	if skipSSL {
 		insecureClient := &http.Client{
 			Transport: &http.Transport{
@@ -49,9 +47,7 @@ func NewGithubClient(org string, accessToken string, skipSSL bool, githubEndpoin
 			},
 		}
 
-		ctx = context.WithValue(context.TODO(), oauth2.HTTPClient, insecureClient)
-	} else {
-		ctx = context.TODO()
+		ctx = context.WithValue(ctx, oauth2.HTTPClient, insecureClient)
 	}
 
 	var client *github.Client
