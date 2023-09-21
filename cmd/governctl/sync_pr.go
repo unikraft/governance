@@ -132,6 +132,10 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 	if len(args) > 0 {
 		// Check to determine if provided argument is a local git folder
 		if _, err := os.Stat(args[0]); !os.IsNotExist(err) {
+			log.G(ctx).
+				WithField("path", args[0]).
+				Info("using repository")
+
 			basename := filepath.Base(args[0])
 			r := repo.FindRepoByName(basename, opts.repos)
 			if r == nil {
@@ -182,6 +186,10 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 
 			// Check to determine if provided argument is a remote git repo
 		} else if uri, err := url.ParseRequestURI(args[0]); err == nil && uri.Scheme != "" && uri.Host != "" {
+			log.G(ctx).
+				WithField("url", args[0]).
+				Info("using repository")
+
 			basename := filepath.Base(uri.Path)
 			r := repo.FindRepoByName(basename, opts.repos)
 			if r == nil {
@@ -192,7 +200,7 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 			localRepo := path.Join(kitcfg.G[config.Config](ctx).TempDir, basename)
 
 			if _, err := os.Stat(localRepo); os.IsNotExist(err) {
-				log.G(ctx).Debugf("Cloning remote git repository: %s to %s", args[0], localRepo)
+				log.G(ctx).Debugf("cloning remote git repository: %s to %s", args[0], localRepo)
 				_, err := git.PlainClone(localRepo, false, &git.CloneOptions{
 					URL: args[0],
 				})
@@ -219,7 +227,7 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 	if len(args) > 1 {
 		i, err := strconv.Atoi(args[1])
 		if err != nil {
-			log.G(ctx).Fatalf("Could not convert PRID to integer: %s", err)
+			log.G(ctx).Fatalf("could not convert PRID to integer: %s", err)
 			os.Exit(1)
 		}
 
@@ -236,7 +244,7 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	log.G(ctx).Debug("Reversing the relationship between teams and repos...")
+	log.G(ctx).Info("reversing the relationship between teams and repos...")
 	repoTeamsMap := make(map[string]repoTeams)
 	for _, t := range teams {
 		for _, r := range t.Repositories {
@@ -278,7 +286,7 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	log.G(ctx).Debugf("Determining the workload of all maintainers and reviewers...")
+	log.G(ctx).Info("determining the workload of all maintainers and reviewers...")
 	for _, r := range repoTeamsMap {
 		// Get a list of all open PRs
 		prs, err := opts.ghApi.ListOpenPullRequests(ctx, r.repo.Fullname())
@@ -320,7 +328,7 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 
 	relevantPrs := make(map[string]map[int]*pullRequest)
 
-	log.G(ctx).Debugf("Calculating lists of potential reviewers and maintainers...")
+	log.G(ctx).Info("calculating lists of potential reviewers and maintainers...")
 	for _, r := range repoTeamsMap {
 		// Get a list of all open PRs
 		prs, err := opts.ghApi.ListOpenPullRequests(ctx, r.repo.Fullname())
@@ -378,7 +386,10 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 		// step when checking CODEOWNERS
 		if _, err := os.Stat(localRepo); os.IsNotExist(err) {
 			r := repo.FindRepoByName(repoName, opts.repos)
-			log.G(ctx).Debugf("Cloning remote git repositeory: %s to %s", r.Origin, localRepo)
+			log.G(ctx).
+				WithField("from", r.Origin).
+				WithField("to", localRepo).
+				Debugf("cloning git repository")
 			_, err := git.PlainClone(localRepo, false, &git.CloneOptions{
 				URL: r.Origin,
 			})
@@ -399,7 +410,7 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 
 			log.G(ctx).
 				WithField("repo", pr.repo.Fullname()).
-				Debugf("Repo uses CODEOWNERS")
+				Info("repo uses CODEOWNERS")
 
 			// Retrieve a list of modofied files in this PR
 			localDiffFile := path.Join(kitcfg.G[config.Config](ctx).TempDir, fmt.Sprintf("%s-%d.diff",
@@ -450,7 +461,7 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 						if _, ok := pr.teams[codeTeam.Fullname()]; !ok {
 							log.G(ctx).
 								WithField("team", codeTeam.Fullname()).
-								Debugf("Adding extra team from CODEOWNERS...")
+								Info("adding extra team from CODEOWNERS...")
 
 							pr.teams[codeTeam.Fullname()] = codeTeam
 						}
@@ -478,7 +489,7 @@ func (opts *SyncPR) Run(cmd *cobra.Command, args []string) error {
 					WithField("repo", repoName).
 					WithField("pr_id", prId).
 					WithField("labels", labelsToAdd).
-					Infof("Setting labels on pull request...")
+					Infof("setting labels on pull request...")
 
 				if !kitcfg.G[config.Config](ctx).DryRun {
 					err := opts.ghApi.AddLabelsToPr(ctx, repoName, prId, labelsToAdd)
@@ -579,7 +590,7 @@ func (opts *SyncPR) updatePrWithPossibleMaintainersAndReviewers(ctx context.Cont
 		WithField("pr_id", prId).
 		// WithField("maintainers", possibleMaintainers).
 		// WithField("reviewers", possibleReviewers).
-		Infof("Assigning reviewer(s) and maintainer(s) to pull request...")
+		Infof("assigning reviewer(s) and maintainer(s) to pull request...")
 
 	if len(possibleMaintainers) == 0 {
 		return fmt.Errorf("could not assign reviewers as none provided")
@@ -600,7 +611,7 @@ func (opts *SyncPR) updatePrWithPossibleMaintainersAndReviewers(ctx context.Cont
 
 			log.G(ctx).
 				WithField("maintainer", m).
-				Info("Assigning maintainer...")
+				Info("assigning maintainer...")
 		}
 
 		if !kitcfg.G[config.Config](ctx).DryRun {
@@ -626,7 +637,7 @@ func (opts *SyncPR) updatePrWithPossibleMaintainersAndReviewers(ctx context.Cont
 		WithField("repo", repo).
 		WithField("pr_id", prId).
 		WithField("maintainers", maintainers).
-		Debugf("Assigned maintainers")
+		Debugf("assigned maintainers")
 
 	var reviewers []string
 
