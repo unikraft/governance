@@ -6,17 +6,17 @@
 package team
 
 import (
+	"context"
 	"fmt"
-	"io/ioutil"
-	"path"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
-
+	gh "github.com/google/go-github/v32/github"
+	"github.com/unikraft/governance/internal/config"
 	"github.com/unikraft/governance/internal/ghapi"
 	"github.com/unikraft/governance/internal/repo"
 	"github.com/unikraft/governance/internal/user"
+	kitcfg "kraftkit.sh/config"
+	"kraftkit.sh/log"
 )
 
 type CodeReviewAlgorithm string
@@ -61,7 +61,6 @@ const (
 )
 
 type Team struct {
-	ghApi        *ghapi.GithubClient
 	Org          string
 	fullname     string
 	Name         string      `yaml:"name,omitempty"`
@@ -75,31 +74,10 @@ type Team struct {
 	Reviewers    []user.User       `yaml:"reviewers,omitempty"`
 	Members      []user.User       `yaml:"members,omitempty"`
 	Repositories []repo.Repository `yaml:"repos,omitempty"`
-	hasSynced    bool
-	shortName    string
-}
 
-func FindTeamByName(a string, teams []*Team) *Team {
-	if a[0] == '@' {
-		split := strings.Split(a, "/")
-		a = split[1]
-	}
-
-	for _, b := range teams {
-		// Check if the name is equal verbatim
-		if b.Name == a {
-			return b
-		}
-
-		// Check if the team type has been prefixed
-		for _, t := range TeamTypes {
-			if fmt.Sprintf("%s-%s", t, b.Name) == a {
-				return b
-			}
-		}
-	}
-
-	return nil
+	ghApi     *ghapi.GithubClient
+	hasSynced bool
+	shortName string
 }
 
 func (r *Team) Fullname() string {
@@ -129,94 +107,186 @@ func (r *Team) Fullname() string {
 	return r.fullname
 }
 
-func NewTeamFromYAML(ghApi *ghapi.GithubClient, githubOrg, teamsFile string) (*Team, error) {
-	yamlFile, err := ioutil.ReadFile(teamsFile)
-	if err != nil {
-		return nil, fmt.Errorf("could not open yaml file: %s", err)
+func (t *Team) Sync(ctx context.Context) error {
+	if t.hasSynced {
+		return nil
 	}
 
-	team := &Team{
-		ghApi: ghApi,
-	}
+	t.shortName = t.Name
 
-	err = yaml.Unmarshal(yamlFile, team)
-	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal yaml file: %s", err)
-	}
+	var err error
+	t.hasSynced = false
 
-	// Let's perform a sanity check and check if we have at least the name of the
-	// team.
-	if team.Name == "" {
-		return nil, fmt.Errorf("team name not provided for %s", teamsFile)
-	}
-
-	if strings.Contains(team.Name, "-") {
-		split := strings.Split(team.Name, "-")
-		n := strings.Join(split[1:], "-")
-
-		for _, t := range TeamTypes {
-			if split[0] == string(t) {
-				team.Name = n
-				team.Type = t
+	// Determine the team type if unset
+	if t.Type == "" {
+		for _, prefix := range []TeamType{SIGTeam, MaintainersTeam, ReviewersTeam} {
+			if strings.HasPrefix(t.Name, string(prefix)) {
+				t.shortName = strings.TrimPrefix(t.Name, fmt.Sprintf("%s-", prefix))
+				t.Type = prefix
 				break
 			}
 		}
-	}
 
-	// Now let's check if all maintainers, reviewers and members have at least
-	// their Github username provided.
-	users := append(team.Maintainers, team.Reviewers...)
-	users = append(users, team.Members...)
-	for _, user := range users {
-		if user.Github == "" {
-			return nil, fmt.Errorf("user does not have github username: %s", user.Name)
+		// If the type is still unset...
+		if t.Type == "" {
+			t.Type = MiscTeam
 		}
 	}
 
-	return team, nil
-}
+	var githubTeam *gh.Team
+	var parentGithubTeam *gh.Team
 
-func NewListOfTeamsFromPath(ghApi *ghapi.GithubClient, githubOrg, teamsDir string) ([]*Team, error) {
-	teams := make([]*Team, 0)
+	// Check if the parent exists.  Note, we may have a dependency problem here.
+	if t.Parent != "" {
+		if t.ParentTeam != nil {
+			// Synchronise the parent now so that information for the child is correct
+			// and up-to-date.
+			err = t.ParentTeam.Sync(ctx)
+			if err != nil {
+				return fmt.Errorf("could not synchronize parent: %s", err)
+			}
+		}
 
-	files, err := ioutil.ReadDir(teamsDir)
-	if err != nil {
-		return nil, fmt.Errorf("could not read directory: %s", err)
+		parentGithubTeam, err = t.ghApi.FindTeam(ctx, t.Org, t.Parent)
+		if err != nil {
+			return err
+		}
 	}
 
-	// To solve a potential dependency problem where teams are dependent on teams
-	// which do not exist, we are going to populate a list "processed" teams first
-	// and then check if any of the teams has a parent which does not exist in the
-	// list which we have just populated.
+	log.G(ctx).Infof("synchronising @%s/%s...", t.Org, t.Name)
 
-	// Iterate through all files and populate a list of known teams.
-	for _, file := range files {
-		t, err := NewTeamFromYAML(
-			ghApi,
-			githubOrg,
-			path.Join(teamsDir, file.Name()),
+	var maintainers []string
+	var reviewers []string
+	var members []string
+	var repos []string
+
+	for _, maintainer := range t.Maintainers {
+		maintainers = append(maintainers, maintainer.Github)
+		members = append(members, maintainer.Github)
+	}
+
+	for _, reviewer := range t.Reviewers {
+		reviewers = append(reviewers, reviewer.Github)
+		members = append(members, reviewer.Github)
+	}
+
+	for _, member := range t.Members {
+		members = append(members, member.Github)
+	}
+
+	for _, repo := range t.Repositories {
+		repos = append(repos, repo.Name)
+	}
+
+	// Github's Go API is a bit stupid... There is a type mis-match in their
+	// Golang SDK when it comes to the "privacy" attribute (either 'closed' or
+	// 'private') and so we must pass a pointer to a string, rather than the
+	// actual string.
+	p := string(t.Privacy)
+	var parentTeamID int64
+
+	if parentGithubTeam != nil {
+		parentTeamID = *parentGithubTeam.ID
+	} else {
+		parentTeamID = -1
+	}
+
+	// Check if the team already exists, if it does not, we must create it.
+	log.G(ctx).Infof("updating team details...")
+	githubTeam, err = t.ghApi.CreateOrUpdateTeam(
+		ctx,
+		kitcfg.G[config.Config](ctx).GithubOrg,
+		t.Name,
+		t.Description,
+		parentTeamID,
+		&p,
+		maintainers,
+		repos,
+	)
+	if err != nil {
+		return fmt.Errorf("could not create or update team: %s", err)
+	}
+
+	log.G(ctx).Infof("synchronising team members...")
+	err = t.ghApi.SyncTeamMembers(
+		ctx,
+		kitcfg.G[config.Config](ctx).GithubOrg,
+		t.Name,
+		string(user.Member),
+		members,
+	)
+	if err != nil {
+		return fmt.Errorf("could not synchronise team members: %s", err)
+	}
+
+	if len(maintainers) > 0 {
+		maintainersTeamName := fmt.Sprintf("%ss-%s", string(user.Maintainer), t.shortName)
+		log.G(ctx).Infof("Synchronising @%s/%s...", t.Org, maintainersTeamName)
+
+		// Create or update a sub-team with list of maintainers
+		log.G(ctx).Infof("updating team details...")
+		_, err := t.ghApi.CreateOrUpdateTeam(
+			ctx,
+			kitcfg.G[config.Config](ctx).GithubOrg,
+			maintainersTeamName,
+			fmt.Sprintf("%s maintainers", t.Name),
+			*githubTeam.ID,
+			&p,
+			maintainers,
+			repos,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("could not parse teams file: %s", err)
+			return fmt.Errorf("could not create or update team: %s", err)
 		}
 
-		teams = append(teams, t)
-	}
-
-	// Now iterate through known teams and match parents
-	for _, t := range teams {
-		if t.Parent != "" {
-			parent := FindTeamByName(t.Parent, teams)
-			if parent != nil {
-				t.ParentTeam = parent
-				break
-			} else {
-				// We might be lucky... it may exist upstream when we later call the
-				// Github API.  If it doesn't then we're in trouble...
-				log.Warnf("cannot find parent from provided teams: %s", t.Parent)
-			}
+		// Add and remove these usernames from the second-level `maintainers-` group
+		log.G(ctx).Infof("synchronising team members...")
+		err = t.ghApi.SyncTeamMembers(
+			ctx,
+			kitcfg.G[config.Config](ctx).GithubOrg,
+			maintainersTeamName,
+			string(user.Maintainer),
+			maintainers,
+		)
+		if err != nil {
+			return fmt.Errorf("could not synchronize team members: %s", err)
 		}
 	}
 
-	return teams, nil
+	if len(reviewers) > 0 {
+		reviewersTeamName := fmt.Sprintf("%ss-%s", string(user.Reviewer), t.shortName)
+		log.G(ctx).Infof("Synchronising @%s/%s...", t.Org, reviewersTeamName)
+
+		// Create or update a sub-team with list of reviewers
+		log.G(ctx).Infof("updating team details...")
+		_, err := t.ghApi.CreateOrUpdateTeam(
+			ctx,
+			kitcfg.G[config.Config](ctx).GithubOrg,
+			reviewersTeamName,
+			fmt.Sprintf("%s reviewers", t.Name),
+			*githubTeam.ID,
+			&p,
+			nil,
+			repos,
+		)
+		if err != nil {
+			return fmt.Errorf("could not create or update team: %s", err)
+		}
+
+		// Add and remove these usernames from the second-level `reviewers-` group
+		log.G(ctx).Infof("synchronising team members...")
+		err = t.ghApi.SyncTeamMembers(
+			ctx,
+			kitcfg.G[config.Config](ctx).GithubOrg,
+			reviewersTeamName,
+			string(user.Member),
+			reviewers,
+		)
+		if err != nil {
+			return fmt.Errorf("could not synchronize team members: %s", err)
+		}
+	}
+
+	t.hasSynced = true
+	return nil
 }
