@@ -11,8 +11,10 @@ import (
 	"strings"
 
 	gh "github.com/google/go-github/v32/github"
+	kitcfg "kraftkit.sh/config"
 	"kraftkit.sh/log"
 
+	"github.com/unikraft/governance/internal/config"
 	"github.com/unikraft/governance/internal/user"
 )
 
@@ -104,6 +106,7 @@ func (t *Team) Sync(ctx context.Context) error {
 	log.G(ctx).Infof("updating team details...")
 	githubTeam, err = t.ghApi.CreateOrUpdateTeam(
 		ctx,
+		kitcfg.G[config.Config](ctx).GithubOrg,
 		t.Name,
 		t.Description,
 		parentTeamID,
@@ -118,6 +121,7 @@ func (t *Team) Sync(ctx context.Context) error {
 	log.G(ctx).Infof("synchronising team members...")
 	err = t.ghApi.SyncTeamMembers(
 		ctx,
+		kitcfg.G[config.Config](ctx).GithubOrg,
 		t.Name,
 		string(user.Member),
 		members,
@@ -134,6 +138,7 @@ func (t *Team) Sync(ctx context.Context) error {
 		log.G(ctx).Infof("updating team details...")
 		_, err := t.ghApi.CreateOrUpdateTeam(
 			ctx,
+			kitcfg.G[config.Config](ctx).GithubOrg,
 			maintainersTeamName,
 			fmt.Sprintf("%s maintainers", t.Name),
 			*githubTeam.ID,
@@ -149,6 +154,7 @@ func (t *Team) Sync(ctx context.Context) error {
 		log.G(ctx).Infof("synchronising team members...")
 		err = t.ghApi.SyncTeamMembers(
 			ctx,
+			kitcfg.G[config.Config](ctx).GithubOrg,
 			maintainersTeamName,
 			string(user.Maintainer),
 			maintainers,
@@ -166,6 +172,7 @@ func (t *Team) Sync(ctx context.Context) error {
 		log.G(ctx).Infof("updating team details...")
 		_, err := t.ghApi.CreateOrUpdateTeam(
 			ctx,
+			kitcfg.G[config.Config](ctx).GithubOrg,
 			reviewersTeamName,
 			fmt.Sprintf("%s reviewers", t.Name),
 			*githubTeam.ID,
@@ -181,6 +188,7 @@ func (t *Team) Sync(ctx context.Context) error {
 		log.G(ctx).Infof("synchronising team members...")
 		err = t.ghApi.SyncTeamMembers(
 			ctx,
+			kitcfg.G[config.Config](ctx).GithubOrg,
 			reviewersTeamName,
 			string(user.Member),
 			reviewers,
