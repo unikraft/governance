@@ -1,3 +1,4 @@
+org: unikraft
 name: sig-plat
 description: Unikraft Platforms Special Interest Group
 privacy: closed

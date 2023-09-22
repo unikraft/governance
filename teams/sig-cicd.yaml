@@ -1,3 +1,4 @@
+org: unikraft
 name: sig-cicd
 description: Unikraft CI/CD Special Interest Group
 privacy: closed

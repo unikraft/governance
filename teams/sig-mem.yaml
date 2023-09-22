@@ -1,3 +1,4 @@
+org: unikraft
 name: sig-mem
 description: Unikraft Memory Management Special Interest Group
 privacy: closed

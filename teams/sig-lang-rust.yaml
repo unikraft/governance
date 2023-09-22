@@ -1,3 +1,4 @@
+org: unikraft
 name: sig-lang-rust
 description: Unikraft Rust Language Special Interest Group
 privacy: closed

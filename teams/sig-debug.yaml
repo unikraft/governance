@@ -1,3 +1,4 @@
+org: unikraft
 name: sig-debug
 description: Unikraft Debug Tools Special Interest Group
 privacy: closed

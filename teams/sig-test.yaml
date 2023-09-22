@@ -1,3 +1,4 @@
+org: unikraft
 name: sig-test
 description: Unikraft Testing Special Interest Group
 privacy: closed

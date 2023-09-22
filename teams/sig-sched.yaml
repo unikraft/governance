@@ -1,3 +1,4 @@
+org: unikraft
 name: sig-sched
 description: Unikraft Schedulers Special Interest Group
 privacy: closed

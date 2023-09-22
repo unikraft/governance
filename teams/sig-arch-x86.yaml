@@ -1,3 +1,4 @@
+org: unikraft
 name: sig-arch-x86
 description: Unikraft Intel x86 Special Interest Group
 privacy: closed

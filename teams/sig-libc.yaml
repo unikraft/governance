@@ -1,3 +1,4 @@
+org: unikraft
 name: sig-libc
 description: Unikraft Standard Library (libc) Special Interest Group
 privacy: closed

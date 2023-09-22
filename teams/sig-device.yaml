@@ -1,3 +1,4 @@
+org: unikraft
 name: sig-device
 description: Unikraft Device Drivers Special Interest Group
 privacy: closed

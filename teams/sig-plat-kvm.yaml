@@ -1,3 +1,4 @@
+org: unikraft
 name: sig-plat-kvm
 description: Unikraft KVM Special Interest Group
 privacy: closed

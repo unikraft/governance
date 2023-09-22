@@ -1,3 +1,4 @@
+org: unikraft
 name: sig-net
 description: Unikraft Networking Special Interest Group
 privacy: closed
