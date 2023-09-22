@@ -11,11 +11,9 @@ import (
 	"strings"
 
 	gh "github.com/google/go-github/v32/github"
-	"github.com/unikraft/governance/internal/config"
 	"github.com/unikraft/governance/internal/ghapi"
 	"github.com/unikraft/governance/internal/repo"
 	"github.com/unikraft/governance/internal/user"
-	kitcfg "kraftkit.sh/config"
 	"kraftkit.sh/log"
 )
 
@@ -195,7 +193,7 @@ func (t *Team) Sync(ctx context.Context) error {
 	log.G(ctx).Infof("updating team details...")
 	githubTeam, err = t.ghApi.CreateOrUpdateTeam(
 		ctx,
-		kitcfg.G[config.Config](ctx).GithubOrg,
+		t.Org,
 		t.Name,
 		t.Description,
 		parentTeamID,
@@ -210,7 +208,7 @@ func (t *Team) Sync(ctx context.Context) error {
 	log.G(ctx).Infof("synchronising team members...")
 	err = t.ghApi.SyncTeamMembers(
 		ctx,
-		kitcfg.G[config.Config](ctx).GithubOrg,
+		t.Org,
 		t.Name,
 		string(user.Member),
 		members,
@@ -221,13 +219,14 @@ func (t *Team) Sync(ctx context.Context) error {
 
 	if len(maintainers) > 0 {
 		maintainersTeamName := fmt.Sprintf("%ss-%s", string(user.Maintainer), t.shortName)
+
 		log.G(ctx).Infof("Synchronising @%s/%s...", t.Org, maintainersTeamName)
 
 		// Create or update a sub-team with list of maintainers
 		log.G(ctx).Infof("updating team details...")
 		_, err := t.ghApi.CreateOrUpdateTeam(
 			ctx,
-			kitcfg.G[config.Config](ctx).GithubOrg,
+			t.Org,
 			maintainersTeamName,
 			fmt.Sprintf("%s maintainers", t.Name),
 			*githubTeam.ID,
@@ -243,7 +242,7 @@ func (t *Team) Sync(ctx context.Context) error {
 		log.G(ctx).Infof("synchronising team members...")
 		err = t.ghApi.SyncTeamMembers(
 			ctx,
-			kitcfg.G[config.Config](ctx).GithubOrg,
+			t.Org,
 			maintainersTeamName,
 			string(user.Maintainer),
 			maintainers,
@@ -261,7 +260,7 @@ func (t *Team) Sync(ctx context.Context) error {
 		log.G(ctx).Infof("updating team details...")
 		_, err := t.ghApi.CreateOrUpdateTeam(
 			ctx,
-			kitcfg.G[config.Config](ctx).GithubOrg,
+			t.Org,
 			reviewersTeamName,
 			fmt.Sprintf("%s reviewers", t.Name),
 			*githubTeam.ID,
@@ -277,7 +276,7 @@ func (t *Team) Sync(ctx context.Context) error {
 		log.G(ctx).Infof("synchronising team members...")
 		err = t.ghApi.SyncTeamMembers(
 			ctx,
-			kitcfg.G[config.Config](ctx).GithubOrg,
+			t.Org,
 			reviewersTeamName,
 			string(user.Member),
 			reviewers,

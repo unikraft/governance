@@ -8,10 +8,8 @@ package config
 type Config struct {
 	LogLevel       string `long:"log-level" short:"l" env:"GOVERN_LOG_LEVEL" usage:"Log level verbosity" default:"info"`
 	DryRun         bool   `long:"dry-run" short:"D" env:"GOVERN_DRY_RUN" usage:"Do not perform any actual change."`
-	LabelsDir      string `long:"labels-dir" short:"L" env:"GOVERN_LABELS_DIR" usage:"Path to the labels definition directory." default:"labels"`
 	TeamsDir       string `long:"teams-dir" short:"T" env:"GOVERN_TEAMS_DIR" usage:"Path to the teams definition directory" default:"teams"`
 	ReposDir       string `long:"repos-dir" short:"r" env:"GOVERN_REPOS_DIR" usage:"Path to the repos definition directory" default:"repos"`
-	GithubOrg      string `long:"github-org" short:"O" env:"GOVERN_GITHUB_ORG" usage:"GitHub organisation to manipulate"`
 	GithubToken    string `long:"github-token" env:"GOVERN_GITHUB_TOKEN" usage:"GitHub API token"`
 	GithubEndpoint string `long:"github-endpoint" env:"GOVERN_GITHUB_ENDPOINT" short:"E" usage:"Alternative GitHub API endpoint (usually GitHub enterprise)"`
 	GithubSkipSSL  bool   `long:"github-skip-ssl" short:"S" env:"GOVERN_GITHUB_SKIP_SSL" usage:"Skip SSL check with GitHub API endpoint"`

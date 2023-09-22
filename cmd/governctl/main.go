@@ -61,7 +61,8 @@ func main() {
 	// Attribute all configuration flags and command-line argument values
 	cmd, args, err := cmd.Find(os.Args[1:])
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	if err := cmdfactory.AttributeFlags(cmd, &cfg, args...); err != nil {
 		fmt.Println(err)

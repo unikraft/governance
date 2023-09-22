@@ -19,6 +19,8 @@ import (
 )
 
 type Sync struct {
+	Org string `long:"org" env:"GOVERN_GITHUB_ORG" usage:"Set the GitHub organisation that should have teams managed" default:"unikraft"`
+
 	teams []*team.Team
 }
 
@@ -26,6 +28,7 @@ func NewSync() *cobra.Command {
 	cmd, err := cmdfactory.New(&Sync{}, cobra.Command{
 		Use:   "sync",
 		Short: "Synchronise teams",
+		Args:  cobra.NoArgs,
 		Annotations: map[string]string{
 			cmdfactory.AnnotationHelpGroup: "team",
 		},
@@ -51,7 +54,7 @@ func (opts *Sync) Pre(cmd *cobra.Command, args []string) error {
 
 	opts.teams, err = team.NewListOfTeamsFromPath(
 		ghApi,
-		kitcfg.G[config.Config](ctx).GithubOrg,
+		opts.Org,
 		kitcfg.G[config.Config](ctx).TeamsDir,
 	)
 	if err != nil {
