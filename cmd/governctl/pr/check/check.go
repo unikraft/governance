@@ -3,36 +3,33 @@
 // Licensed under the BSD-3-Clause License (the "License").
 // You may not use this file except in compliance with the License.
 
-package pr
+package check
 
 import (
 	"github.com/spf13/cobra"
 	"kraftkit.sh/cmdfactory"
-
-	"github.com/unikraft/governance/cmd/governctl/pr/check"
-	"github.com/unikraft/governance/cmd/governctl/pr/sync"
 )
 
-type PR struct{}
+type Check struct{}
 
 func New() *cobra.Command {
-	cmd, err := cmdfactory.New(&PR{}, cobra.Command{
-		Use:    "pr SUBCOMMAND",
-		Short:  "Manage pull requests",
-		Hidden: true,
+	cmd, err := cmdfactory.New(&Check{}, cobra.Command{
+		Use:   "check SUBCOMMAND",
+		Short: "Check information about a pull request",
 		Annotations: map[string]string{
 			cmdfactory.AnnotationHelpGroup: "pr",
 		},
+		Hidden: true,
 	})
 	if err != nil {
 		panic(err)
 	}
-	cmd.AddCommand(sync.New())
-	cmd.AddCommand(check.New())
+
+	cmd.AddCommand(NewMergable())
 
 	return cmd
 }
 
-func (opts *PR) Run(cmd *cobra.Command, args []string) error {
+func (*Check) Run(cmd *cobra.Command, _ []string) error {
 	return cmd.Help()
 }
