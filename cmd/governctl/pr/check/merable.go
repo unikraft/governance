@@ -74,6 +74,17 @@ func NewMergable() *cobra.Command {
 func (opts *Mergable) Run(cmd *cobra.Command, args []string) error {
 	var err error
 
+	if len(opts.ApproverComments) == 0 {
+		opts.ApproverComments = []string{
+			"Approved-by: (?P<approved_by>.*>)",
+		}
+	}
+	if len(opts.ReviewerComments) == 0 {
+		opts.ReviewerComments = []string{
+			"Reviewed-by: (?P<reviewed_by>.*>)",
+		}
+	}
+
 	ctx := cmd.Context()
 
 	ghOrg, ghRepo, ghPrId, err := cmdutils.ParseOrgRepoAndPullRequestArgs(args)
