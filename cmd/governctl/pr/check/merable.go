@@ -7,21 +7,20 @@ package check
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
-	"regexp"
-	"strings"
+	"os"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/google/go-github/v32/github"
 	"github.com/spf13/cobra"
 	"kraftkit.sh/cmdfactory"
 	kitcfg "kraftkit.sh/config"
+	"kraftkit.sh/log"
 
 	"github.com/unikraft/governance/internal/cmdutils"
 	"github.com/unikraft/governance/internal/config"
 	"github.com/unikraft/governance/internal/ghapi"
+	"github.com/unikraft/governance/internal/ghpr"
 )
 
 type Mergable struct {
@@ -41,8 +40,6 @@ type Mergable struct {
 	ReviewerTeams      []string `long:"reviewer-teams" env:"GOVERN_REVIEWER_TEAMS" usage:"The GitHub team that the reviewer must be a part to be considered a reviewer"`
 	ReviewStates       []string `long:"review-states" env:"GOVERN_REVIEW_STATES" usage:"The state of the GitHub approval from the reivewer"`
 	States             []string `long:"states" env:"GOVERN_STATES" usage:"Consider the PR mergable if it has one of these supplied states"`
-
-	ghClient *ghapi.GithubClient
 }
 
 func NewMergable() *cobra.Command {
@@ -72,19 +69,6 @@ func NewMergable() *cobra.Command {
 }
 
 func (opts *Mergable) Run(cmd *cobra.Command, args []string) error {
-	var err error
-
-	if len(opts.ApproverComments) == 0 {
-		opts.ApproverComments = []string{
-			"Approved-by: (?P<approved_by>.*>)",
-		}
-	}
-	if len(opts.ReviewerComments) == 0 {
-		opts.ReviewerComments = []string{
-			"Reviewed-by: (?P<reviewed_by>.*>)",
-		}
-	}
-
 	ctx := cmd.Context()
 
 	ghOrg, ghRepo, ghPrId, err := cmdutils.ParseOrgRepoAndPullRequestArgs(args)
@@ -92,7 +76,7 @@ func (opts *Mergable) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	opts.ghClient, err = ghapi.NewGithubClient(
+	ghClient, err := ghapi.NewGithubClient(
 		ctx,
 		kitcfg.G[config.Config](ctx).GithubToken,
 		kitcfg.G[config.Config](ctx).GithubSkipSSL,
@@ -102,327 +86,57 @@ func (opts *Mergable) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	pull, err := opts.ghClient.GetPullRequest(ctx, ghOrg, ghRepo, ghPrId)
-	if err != nil {
-		return fmt.Errorf("could not get pull request: %w", err)
-	}
-
-	// Ignore if state not requested
-	if !opts.requestsState(*pull.State) {
-		return fmt.Errorf("pull request does not match requested state")
-	}
-
-	// Ignore if labels not requested
-	if !opts.requestsLabels(pull.Labels) {
-		return fmt.Errorf("pull request does not have requested labels")
-	}
-
-	// Ignore if only mergeables requested
-	if opts.NoConflicts && !*pull.Mergeable {
-		return fmt.Errorf("pull request has merge conflicts")
-	}
-
-	// Ignore drafts
-	if *pull.Draft {
-		return fmt.Errorf("pull request is in draft state")
-	}
-
-	// Iterate through all the comments for this PR
-	comments, err := opts.ghClient.ListPullRequestComments(
-		ctx,
+	pull, err := ghpr.NewPullRequestFromID(ctx,
+		ghClient,
 		ghOrg,
 		ghRepo,
 		ghPrId,
+		// ghpr.WithBaseBranch(opts.BaseBranch),
+		ghpr.WithWorkdir(kitcfg.G[config.Config](ctx).TempDir),
 	)
 	if err != nil {
-		return fmt.Errorf("could not get pull request comments: %w", err)
+		return fmt.Errorf("could not prepare pull request: %w", err)
 	}
 
-	res := make(map[string][]string)
-	prApprovals := 0
-	prReviews := 0
-
-	for _, c := range comments {
-		if ok, matches := opts.requestsApproverRegex(*c.Body); ok {
-			if opts.requestsApproverTeam(ctx, *pull, *c.User.Login) {
-				if !opts.requestsApproveState("comment") {
-					continue
-				}
-
-				for k, v := range matches {
-					if _, ok := res[k]; !ok {
-						res[k] = make([]string, 0)
-					}
-					res[k] = append(res[k], v)
-					prApprovals++
-				}
-			}
-		}
-
-		if ok, matches := opts.requestsReviewerRegex(*c.Body); ok {
-			if opts.requestsReviewerTeam(ctx, *pull, *c.User.Login) {
-				for k, v := range matches {
-					if _, ok := res[k]; !ok {
-						res[k] = make([]string, 0)
-					}
-					res[k] = append(res[k], v)
-					prReviews++
-				}
-			}
-		}
-	}
-
-	// Iterate through all the reviews for this PR
-	reviews, err := opts.ghClient.ListPullRequestReviews(ctx, ghOrg, ghRepo, ghPrId)
+	_, result, err := pull.SatisfiesMergeRequirements(ctx,
+		ghpr.WithApproverComments(opts.ApproverComments...),
+		ghpr.WithApproverTeams(opts.ApproverTeams...),
+		ghpr.WithApproveStates(opts.ApproveStates...),
+		ghpr.WithIgnoreLabels(opts.IgnoreLabels...),
+		ghpr.WithIgnoreStates(opts.IgnoreStates...),
+		ghpr.WithLabels(opts.Labels...),
+		ghpr.WithMinApprovals(opts.MinApprovals),
+		ghpr.WithMinReviews(opts.MinReviews),
+		ghpr.WithNoConflicts(opts.NoConflicts),
+		ghpr.WithNoDraft(opts.NoDraft),
+		ghpr.WithNoRespectAssignees(opts.NoRespectAssignees),
+		ghpr.WithNoRespectReviewers(opts.NoRespectReviewers),
+		ghpr.WithReviewerComments(opts.ReviewerComments...),
+		ghpr.WithReviewerTeams(opts.ReviewerTeams...),
+		ghpr.WithReviewStates(opts.ReviewStates...),
+		ghpr.WithStates(opts.States...),
+	)
 	if err != nil {
-		return fmt.Errorf("could not list pull request reviews: %w", err)
-	}
-
-	for _, r := range reviews {
-		if ok, matches := opts.requestsApproverRegex(*r.Body); ok {
-			if opts.requestsApproverTeam(ctx, *pull, *r.User.Login) {
-				if !opts.requestsApproveState(*r.State) {
-					continue
-				}
-
-				for k, v := range matches {
-					if _, ok := res[k]; !ok {
-						res[k] = make([]string, 0)
-					}
-					res[k] = append(res[k], v)
-					prApprovals++
-				}
-			}
-		}
-
-		if ok, matches := opts.requestsReviewerRegex(*r.Body); ok {
-			if opts.requestsReviewerTeam(ctx, *pull, *r.User.Login) {
-				if !opts.requestsReviewState(*r.State) {
-					continue
-				}
-
-				for k, v := range matches {
-					if _, ok := res[k]; !ok {
-						res[k] = make([]string, 0)
-					}
-					res[k] = append(res[k], v)
-					prReviews++
-				}
-			}
-		}
-	}
-
-	if !opts.hasMinApprovers(prApprovals) || !opts.hasMinReviewers(prReviews) {
-		return fmt.Errorf("pull request does not meet the minimum number approvers and reviewers")
+		return fmt.Errorf("pull request is not mergable: %w", err)
 	}
 
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
 	encoder.SetEscapeHTML(false)
 	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(&res); err != nil {
+	if err := encoder.Encode(&result); err != nil {
 		return fmt.Errorf("could not marshal JSON response: %w", err)
 	}
 
 	fmt.Print(buffer.String())
 
+	// If the user has not specified a temporary directory which will have been
+	// passed as the working directory, a temporary one will have been generated.
+	// This isn't a "neat" way of cleaning up.
+	if kitcfg.G[config.Config](ctx).TempDir == "" {
+		log.G(ctx).WithField("path", pull.Workdir()).Info("removing")
+		os.RemoveAll(pull.Workdir())
+	}
+
 	return nil
-}
-
-// requestsState checks whether the source requests this particular state
-func (opts *Mergable) requestsState(state string) bool {
-	ret := false
-
-	// if there are no set states, assume only "open" states
-	if len(opts.States) == 0 {
-		ret = state == "open"
-	} else {
-		for _, s := range opts.States {
-			if s == state {
-				ret = true
-				break
-			}
-		}
-	}
-
-	// Ensure ignored states
-	for _, s := range opts.IgnoreStates {
-		if s == state {
-			ret = false
-			break
-		}
-	}
-
-	return ret
-}
-
-// requestsApproveState checks whether the PR approver matches the desired state
-func (opts *Mergable) requestsApproveState(state string) bool {
-	if len(opts.ApproveStates) == 0 {
-		return true
-	}
-
-	state = strings.ToLower(state)
-	for _, s := range opts.ApproveStates {
-		if state == strings.ToLower(s) {
-			return true
-		}
-	}
-
-	return false
-}
-
-// requestsReviewState checks whether the PR review matches the desired state
-func (opts *Mergable) requestsReviewState(state string) bool {
-	if len(opts.ReviewStates) == 0 {
-		return true
-	}
-
-	state = strings.ToLower(state)
-	for _, s := range opts.ReviewStates {
-		if state == strings.ToLower(s) {
-			return true
-		}
-	}
-
-	return false
-}
-
-// requestsLabels checks whether the source requests these set of labels
-func (opts *Mergable) requestsLabels(labels []*github.Label) bool {
-	ret := false
-
-	// If no set labels, assume all
-	if len(opts.Labels) == 0 {
-		ret = true
-	} else {
-	includeLoop:
-		for _, rl := range opts.Labels {
-			for _, rr := range labels {
-				if rl == rr.GetName() {
-					ret = true
-					break includeLoop
-				}
-			}
-		}
-	}
-
-excludeLoop:
-	for _, rl := range opts.IgnoreLabels {
-		for _, rr := range labels {
-			if rl == rr.GetName() {
-				ret = false
-				break excludeLoop
-			}
-		}
-	}
-
-	return ret
-}
-
-// requestsReviewerRegex determines if the source requests this reviewer regex
-func (opts *Mergable) requestsReviewerRegex(comment string) (bool, map[string]string) {
-	if len(opts.ReviewerComments) == 0 {
-		return true, nil
-	}
-
-	matches := make(map[string]string)
-	for _, c := range opts.ReviewerComments {
-		for k, v := range getParams(c, comment) {
-			matches[k] = v
-		}
-	}
-
-	return len(matches) > 0, matches
-}
-
-// requestsReviewerTeam determines if the source requests this reviewer team
-func (opts *Mergable) requestsReviewerTeam(ctx context.Context, pr github.PullRequest, username string) bool {
-	if !opts.NoRespectReviewers {
-		return true
-	}
-
-	// Check the named approver teams part of the input to this resource
-	for _, t := range opts.ReviewerTeams {
-		if ok, _ := opts.ghClient.UserMemberOfTeam(ctx, username, t); ok {
-			return true
-		}
-	}
-
-	return false
-}
-
-// hasMinReviewers determines whether the supplied list meets the requested
-// minimum
-func (opts *Mergable) hasMinReviewers(numReviewers int) bool {
-	min := 1
-	if opts.MinReviews > min {
-		min = opts.MinReviews
-	}
-
-	return numReviewers >= min
-}
-
-// requestsApproverRegex determines if the source requests this approver regex
-func (opts *Mergable) requestsApproverRegex(comment string) (bool, map[string]string) {
-	if len(opts.ApproverComments) == 0 {
-		return true, nil
-	}
-
-	matches := make(map[string]string)
-	for _, c := range opts.ApproverComments {
-		for k, v := range getParams(c, comment) {
-			matches[k] = v
-		}
-	}
-
-	return len(matches) > 0, matches
-}
-
-// requestsApproverTeam determines if the source requests this approver team
-func (opts *Mergable) requestsApproverTeam(ctx context.Context, pr github.PullRequest, username string) bool {
-	if !opts.NoRespectAssignees {
-		for _, assignee := range pr.Assignees {
-			if username == *assignee.Login {
-				return true
-			}
-		}
-	}
-
-	// Check the named approver teams part of the input to this resource
-	for _, t := range opts.ApproverTeams {
-		if ok, _ := opts.ghClient.UserMemberOfTeam(ctx, username, t); ok {
-			return true
-		}
-	}
-
-	return false
-}
-
-// hasMinApprovers determines whether the supplied list meets the requested
-// minimum
-func (opts *Mergable) hasMinApprovers(numApprovers int) bool {
-	min := 1
-	if opts.MinApprovals > min {
-		min = opts.MinApprovals
-	}
-
-	return numApprovers >= min
-}
-
-// getParams parses the provided regular expression which has identifiers and
-// matches it against the provided body, matches are detected and populated in a
-// map with the key as the identifier.
-func getParams(regEx, body string) (paramsMap map[string]string) {
-	var compRegEx = regexp.MustCompile(regEx)
-	match := compRegEx.FindStringSubmatch(body)
-
-	paramsMap = make(map[string]string)
-	for i, name := range compRegEx.SubexpNames() {
-		if i > 0 && i <= len(match) {
-			paramsMap[name] = match[i]
-		}
-	}
-
-	return paramsMap
 }
