@@ -25,22 +25,22 @@ import (
 )
 
 type Mergable struct {
-	ApproverComments   []string `flag:"approver-comments" usage:"Regular expression that an approver writes"`
-	ApproverTeams      []string `flag:"approver-teams" usage:"The GitHub team that the approver must be a part of to be considered an approver"`
-	ApproveStates      []string `flag:"approve-states" usage:"The state of the GitHub approval from the assignee" default:"approve"`
-	IgnoreLabels       []string `flag:"ignore-labels" usage:"Ignore the PR if it has any of these labels"`
-	IgnoreStates       []string `flag:"ignore-states" usage:"Ignore the PR if it has any of these states"`
-	Labels             []string `flag:"labels" usage:"The PR must have these labels to be considered mergable"`
-	MinApprovals       int      `flag:"min-approvals" usage:"Minimum number of approvals required to be considered mergable" default:"1"`
-	MinReviews         int      `flag:"min-reviews" usage:"Minimum number of reviews a PR requires to be considered mergable" default:"1"`
-	NoConflicts        bool     `flag:"no-conflicts" usage:"Pull request must not have any conflicts"`
-	NoDraft            bool     `flag:"no-draft" usage:"Pull request must not be in a draft state"`
-	NoRespectAssignees bool     `flag:"no-respect-assignees" usage:"Whether the PR's assignees should be not considered approvers even if they are not part of a team/codeowner"`
-	NoRespectReviewers bool     `flag:"no-respect-reviewers" usage:"Whether the PR's requested reviewers review should not be considered even if they are not part of a team/codeowner"`
-	ReviewerComments   []string `flag:"reviewer-comments" usage:"Regular expression that a reviewer writes"`
-	ReviewerTeams      []string `flag:"reviewer-teams" usage:"The GitHub team that the reviewer must be a part to be considered a reviewer"`
-	ReviewStates       []string `flag:"review-states" usage:"The state of the GitHub approval from the reivewer"`
-	States             []string `flag:"states" usage:"Consider the PR mergable if it has one of these supplied states"`
+	ApproverComments   []string `long:"approver-comments" usage:"Regular expression that an approver writes"`
+	ApproverTeams      []string `long:"approver-teams" usage:"The GitHub team that the approver must be a part of to be considered an approver"`
+	ApproveStates      []string `long:"approve-states" usage:"The state of the GitHub approval from the assignee" default:"approve"`
+	IgnoreLabels       []string `long:"ignore-labels" usage:"Ignore the PR if it has any of these labels"`
+	IgnoreStates       []string `long:"ignore-states" usage:"Ignore the PR if it has any of these states"`
+	Labels             []string `long:"labels" usage:"The PR must have these labels to be considered mergable"`
+	MinApprovals       int      `long:"min-approvals" usage:"Minimum number of approvals required to be considered mergable" default:"1"`
+	MinReviews         int      `long:"min-reviews" usage:"Minimum number of reviews a PR requires to be considered mergable" default:"1"`
+	NoConflicts        bool     `long:"no-conflicts" usage:"Pull request must not have any conflicts"`
+	NoDraft            bool     `long:"no-draft" usage:"Pull request must not be in a draft state"`
+	NoRespectAssignees bool     `long:"no-respect-assignees" usage:"Whether the PR's assignees should be not considered approvers even if they are not part of a team/codeowner"`
+	NoRespectReviewers bool     `long:"no-respect-reviewers" usage:"Whether the PR's requested reviewers review should not be considered even if they are not part of a team/codeowner"`
+	ReviewerComments   []string `long:"reviewer-comments" usage:"Regular expression that a reviewer writes"`
+	ReviewerTeams      []string `long:"reviewer-teams" usage:"The GitHub team that the reviewer must be a part to be considered a reviewer"`
+	ReviewStates       []string `long:"review-states" usage:"The state of the GitHub approval from the reivewer"`
+	States             []string `long:"states" usage:"Consider the PR mergable if it has one of these supplied states"`
 
 	ghClient *ghapi.GithubClient
 }
