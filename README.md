@@ -1,6 +1,55 @@
 # Unikraft Governance
 
-This repository contains definitions, documentation and tools to facilate the governance of the Unikraft Open-Source project.
+This repository contains tools, definitions, documentation and tools to facilitate the governance of the Unikraft Open-Source project.
+
+## Tools
+
+Shipped in this repository is the program `governctl` which is intended to be used by maintainers, reviewers, team members, staff and contributors to ease repetitive maintenance tasks within the Unikraft Open-Source Project.
+
+### Download & Installation
+
+For pre-built binaries, check out the [releases page](https://github.com/unikraft/kraftkit/releases/latest).
+
+### Building from source
+
+If you have `docker` installed, you can build the developer environment:
+
+```
+make container
+make devenv
+```
+
+If you have alternative container runtime solution installed like `podman` or `nerdctl`, you can set the environmental variable `DOCKER`:
+
+```
+export DOCKER=nerdctl
+```
+
+And Make commands will be proxied through the developer environment.
+Alternatively, turn off proxying commands via the developer environment by unsetting the value:
+
+```
+export DOCKER=
+```
+
+To build `governctl`, simply run:
+
+```
+make
+```
+
+This will generate a binary within the `./dist` folder.
+
+
+### Getting started
+
+To get started using `governctl`, first set your username and a [personal access token](https://github.com/settings/tokens/news) as environmental variables:
+
+```
+export GOVERN_GITHUB_USER=
+export GOVERN_GITHUB_TOKEN=
+```
+
 
 ## Teams and SIGs
 
