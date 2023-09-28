@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"kraftkit.sh/cmdfactory"
 	kitcfg "kraftkit.sh/config"
+	"kraftkit.sh/iostreams"
 	"kraftkit.sh/log"
 
 	"github.com/unikraft/governance/cmd/governctl/pr"
@@ -91,6 +92,7 @@ func main() {
 	}
 
 	ctx = log.WithLogger(ctx, logger)
+	ctx = iostreams.WithIOStreams(ctx, iostreams.System())
 
 	// Execute the main command
 	cmdfactory.Main(ctx, cmd)
