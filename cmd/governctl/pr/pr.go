@@ -29,6 +29,7 @@ func New() *cobra.Command {
 	}
 	cmd.AddCommand(sync.New())
 	cmd.AddCommand(check.New())
+	cmd.AddCommand(NewMerge())
 
 	return cmd
 }
