@@ -8,6 +8,7 @@ require (
 	github.com/go-git/go-git/v5 v5.8.1
 	github.com/google/go-github/v32 v32.1.0
 	github.com/hairyhenderson/go-codeowners v0.2.2
+	github.com/muesli/reflow v0.3.0
 	github.com/rancher/wrangler v1.0.2
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
@@ -47,7 +48,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
-	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
