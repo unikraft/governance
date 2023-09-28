@@ -1,0 +1,69 @@
+#! .goreleaser.yaml
+changelog:
+  sort: asc
+  use: github
+  filters:
+    include:
+      - '^.*#[[:digit:]]+.*$'
+  groups:
+  - title: ⚠️ Breaking Changes
+    regexp: '^[[:xdigit:]]+: [[:lower:]]+(\(.*\))?!:.*$'
+    order: 1
+  - title: 🚀 New Features
+    regexp: '^[[:xdigit:]]+: feat(\(.*\))?:.*$'
+    order: 2
+  - title: 🐛 Bug Fixes
+    regexp: '^[[:xdigit:]]+: fix(\(.*\))?:.*$'
+    order: 3
+  - title: 📖 Docs
+    regexp: '^[[:xdigit:]]+: docs(\(.*\))?:.*$'
+    order: 4
+  - title: 🤖 Bumps
+    regexp: '^[[:xdigit:]]+: (gomod|build)\(deps\):.*$'
+    order: 5
+  - title: 🐒 Miscellaneous
+    order: 999
+
+release:
+  github:
+    owner: unikraft
+    name: governance
+  draft: false
+  prerelease: false
+  mode: replace
+  header: |
+    ## `governctl` {{ .Tag }} ({{ .Date }})
+
+    This is a stable release of `governctl`.
+  name_template: 'v{{ .Version }}'
+
+nfpms:
+- vendor: Unikraft
+  id: nfpm-default
+  maintainer: Alexander Jung <alex@unikraft.io>
+  description: Build and use highly customized and ultra-lightweight unikernels.
+  license: BSD 3-clause
+  bindir: /usr/local/bin
+  homepage: https://github.com/unikraft/governance
+  formats:
+  - deb
+  - rpm
+  - apk
+
+builds:
+- binary: governctl
+  main: ./cmd/governctl
+  env:
+  - CGO_ENABLED=0
+  - GOMOD=github.com/unikraft/governance
+  goos:
+  - linux
+  - darwin
+  goarch:
+  - amd64
+  - arm64
+  ldflags:
+  - -s -w
+  - -X {{ .Env.GOMOD }}/internal/version.version={{ .Version }}
+  - -X {{ .Env.GOMOD }}/internal/version.commit={{ .Commit }}
+  - -X {{ .Env.GOMOD }}/internal/version.buildTime={{ .Date }}

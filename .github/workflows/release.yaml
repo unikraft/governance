@@ -1,0 +1,33 @@
+name: release
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Fetch all tags
+        run: |
+          git config --global --add safe.directory /__w/kraftkit/kraftkit
+          git fetch --force --tags
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --rm-dist --skip-validate --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
