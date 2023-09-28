@@ -26,6 +26,7 @@ func New() *cobra.Command {
 	}
 
 	cmd.AddCommand(NewMergable())
+	cmd.AddCommand(NewPatch())
 
 	return cmd
 }
