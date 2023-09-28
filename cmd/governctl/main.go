@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/rancher/wrangler/pkg/signals"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -19,6 +20,7 @@ import (
 	"github.com/unikraft/governance/cmd/governctl/pr"
 	"github.com/unikraft/governance/cmd/governctl/team"
 	"github.com/unikraft/governance/internal/config"
+	"github.com/unikraft/governance/internal/version"
 )
 
 type GovernCtl struct{}
@@ -26,7 +28,16 @@ type GovernCtl struct{}
 func New() *cobra.Command {
 	cmd, err := cmdfactory.New(&GovernCtl{}, cobra.Command{
 		Use:   "governctl COMMAND",
-		Short: `Govern a GitHub organisation`,
+		Short: `Govern the Unikraft Open-Source Project GitHub Organization`,
+		Long: heredoc.Docf(`
+		Govern the Unikraft Open-Source Project GitHub Organization
+
+		The utility program governctl is intended to be used by maintainers,
+		reviewers, team members, staff and contributors to ease repetitive
+		maintenance tasks within the Unikraft Open-Source Project.
+
+		VERSION
+		  %s`, version.String()),
 		CompletionOptions: cobra.CompletionOptions{
 			HiddenDefaultCmd: true,
 		},

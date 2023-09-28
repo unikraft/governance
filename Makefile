@@ -95,9 +95,9 @@ ifeq ($(DEBUG),y)
 $(.PROXY)$(BIN): GO_GCFLAGS ?= -N -l
 endif
 $(.PROXY)$(BIN): GO_LDFLAGS ?= -s -w
-$(.PROXY)$(BIN): GO_LDFLAGS += -X "main.version=$(APP_VERSION)"
-$(.PROXY)$(BIN): GO_LDFLAGS += -X "main.commit=$(GIT_SHA)"
-$(.PROXY)$(BIN): GO_LDFLAGS += -X "main.buildTime=$(shell date)"
+$(.PROXY)$(BIN): GO_LDFLAGS += -X "github.com/unikraft/governance/internal/version.version=$(APP_VERSION)"
+$(.PROXY)$(BIN): GO_LDFLAGS += -X "github.com/unikraft/governance/internal/version.commit=$(GIT_SHA)"
+$(.PROXY)$(BIN): GO_LDFLAGS += -X "github.com/unikraft/governance/internal/version.buildTime=$(shell date)"
 $(.PROXY)$(BIN):
 	$(GO) build \
 		-ldflags='$(GO_GCFLAGS)' \
