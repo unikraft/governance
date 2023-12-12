@@ -188,5 +188,14 @@ func (opts *Patch) Run(cmd *cobra.Command, args []string) error {
 
 	defer iostreams.G(ctx).StopPager()
 
-	return table.Render(iostreams.G(ctx).Out)
+	err = table.Render(iostreams.G(ctx).Out)
+	if err != nil {
+		return err
+	}
+
+	if errors > 0 || warnings > 0 {
+		return fmt.Errorf("checkpatch failed with %d errors and %d warnings", errors, warnings)
+	}
+
+	return nil
 }
