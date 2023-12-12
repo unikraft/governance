@@ -107,10 +107,17 @@ func (opts *Patch) Run(cmd *cobra.Command, args []string) error {
 
 	cs := iostreams.G(ctx).ColorScheme()
 
-	table, err := tableprinter.NewTablePrinter(ctx,
+	topts := []tableprinter.TablePrinterOption{
 		tableprinter.WithOutputFormatFromString(opts.Output),
-		tableprinter.WithMaxWidth(iostreams.G(ctx).TerminalWidth()),
-	)
+	}
+
+	if !kitcfg.G[config.Config](ctx).NoRender {
+		topts = append(topts, tableprinter.WithMaxWidth(10000))
+	} else {
+		topts = append(topts, tableprinter.WithMaxWidth(iostreams.G(ctx).TerminalWidth()))
+	}
+
+	table, err := tableprinter.NewTablePrinter(ctx, topts...)
 	if err != nil {
 		return err
 	}
@@ -159,7 +166,7 @@ func (opts *Patch) Run(cmd *cobra.Command, args []string) error {
 			table.AddField(patch.Hash[0:7], nil)
 			table.AddField(string(note.Level), level)
 			table.AddField(note.Type, nil)
-			table.AddField(note.Message, nil)
+			table.AddField("\""+note.Message+"\"", nil)
 			table.AddField(note.File, nil)
 			table.AddField(fmt.Sprintf("%d", note.Line), nil)
 			table.EndRow()
