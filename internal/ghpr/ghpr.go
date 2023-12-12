@@ -182,27 +182,28 @@ func NewPullRequestFromID(ctx context.Context, client *ghapi.GithubClient, ghOrg
 	}
 
 	stopErr := errors.New("stop")
-	var lastCommit *gitobject.Commit
+	var prevCommit *gitobject.Commit
 
 	totalCommits := 0
 
 	pr.patches = make([]*patch.Patch, 0)
 
 	if err := itr.ForEach(func(commit *gitobject.Commit) error {
-		if lastCommit == nil {
-			lastCommit = commit
+		if prevCommit == nil {
+			prevCommit = commit
 			return nil
 		}
 
 		totalCommits++
 
-		p, err := patch.NewPatchFromCommits(ctx, pr.localRepo, lastCommit, commit)
+		p, err := patch.NewPatchFromCommits(ctx, pr.localRepo, prevCommit, commit)
 		if err != nil {
 			return err
 		}
 
 		p.Filename = strings.ReplaceAll(p.Title, " ", "-")
 		p.Filename = strings.ReplaceAll(p.Filename, ":", "")
+		p.Filename = strings.ReplaceAll(p.Filename, ".", "")
 		p.Filename = strings.ReplaceAll(p.Filename, "/", "-")
 		p.Filename = strings.ReplaceAll(p.Filename, "?", "")
 		p.Filename = strings.ReplaceAll(p.Filename, "`", "")
@@ -214,6 +215,7 @@ func NewPullRequestFromID(ctx context.Context, client *ghapi.GithubClient, ghOrg
 			return stopErr
 		}
 
+		prevCommit = commit
 		return nil
 	}); err != nil && !errors.Is(err, stopErr) {
 		return nil, fmt.Errorf("could not iterate over log error: %w", err)
