@@ -179,7 +179,7 @@ func (opts *Patch) Run(cmd *cobra.Command, args []string) error {
 					note.File,
 					note.Line,
 					note.Type,
-					fmt.Sprintf("(%s) %s:%d-%d: %s", patch.Hash[0:7], note.File, note.Line, note.Line, note.Message),
+					note.Message,
 				)
 			}
 		}
