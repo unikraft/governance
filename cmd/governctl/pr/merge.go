@@ -7,6 +7,7 @@ package pr
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -71,9 +72,7 @@ func NewMerge() *cobra.Command {
 	return cmd
 }
 
-func (opts *Merge) Run(cmd *cobra.Command, args []string) error {
-	ctx := cmd.Context()
-
+func (opts *Merge) Run(ctx context.Context, args []string) error {
 	ghOrg, ghRepo, ghPrId, err := cmdutils.ParseOrgRepoAndPullRequestArgs(args)
 	if err != nil {
 		return err

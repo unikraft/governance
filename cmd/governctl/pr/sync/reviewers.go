@@ -53,9 +53,8 @@ func NewReviewers() *cobra.Command {
 	return cmd
 }
 
-func (opts *Reviewers) Run(cmd *cobra.Command, args []string) error {
+func (opts *Reviewers) Run(ctx context.Context, args []string) error {
 	var err error
-	ctx := cmd.Context()
 
 	opts.ghClient, err = ghapi.NewGithubClient(
 		ctx,

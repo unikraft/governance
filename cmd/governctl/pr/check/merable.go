@@ -7,6 +7,7 @@ package check
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -68,9 +69,7 @@ func NewMergable() *cobra.Command {
 	return cmd
 }
 
-func (opts *Mergable) Run(cmd *cobra.Command, args []string) error {
-	ctx := cmd.Context()
-
+func (opts *Mergable) Run(ctx context.Context, args []string) error {
 	ghOrg, ghRepo, ghPrId, err := cmdutils.ParseOrgRepoAndPullRequestArgs(args)
 	if err != nil {
 		return err

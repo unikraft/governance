@@ -6,6 +6,7 @@
 package team
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -63,9 +64,7 @@ func (opts *Sync) Pre(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (opts *Sync) Run(cmd *cobra.Command, args []string) error {
-	ctx := cmd.Context()
-
+func (opts *Sync) Run(ctx context.Context, args []string) error {
 	for _, t := range opts.teams {
 		err := t.Sync(ctx)
 		if err != nil {

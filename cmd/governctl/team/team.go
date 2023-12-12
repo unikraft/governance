@@ -6,7 +6,10 @@
 package team
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"kraftkit.sh/cmdfactory"
 )
 
@@ -30,6 +33,6 @@ func New() *cobra.Command {
 	return cmd
 }
 
-func (opts *Team) Run(cmd *cobra.Command, args []string) error {
-	return cmd.Help()
+func (opts *Team) Run(_ context.Context, args []string) error {
+	return pflag.ErrHelp
 }

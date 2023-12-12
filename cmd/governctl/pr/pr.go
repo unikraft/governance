@@ -6,7 +6,10 @@
 package pr
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"kraftkit.sh/cmdfactory"
 
 	"github.com/unikraft/governance/cmd/governctl/pr/check"
@@ -34,6 +37,6 @@ func New() *cobra.Command {
 	return cmd
 }
 
-func (opts *PR) Run(cmd *cobra.Command, args []string) error {
-	return cmd.Help()
+func (opts *PR) Run(_ context.Context, args []string) error {
+	return pflag.ErrHelp
 }

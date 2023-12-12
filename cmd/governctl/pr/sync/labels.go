@@ -6,6 +6,7 @@
 package sync
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -44,9 +45,8 @@ func NewLabels() *cobra.Command {
 	return cmd
 }
 
-func (opts *Labels) Run(cmd *cobra.Command, args []string) error {
+func (opts *Labels) Run(ctx context.Context, args []string) error {
 	var err error
-	ctx := cmd.Context()
 
 	ghOrg, ghRepo, ghPrId, err := cmdutils.ParseOrgRepoAndPullRequestArgs(args)
 	if err != nil {

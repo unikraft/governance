@@ -6,6 +6,7 @@
 package check
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -53,7 +54,7 @@ func NewPatch() *cobra.Command {
 	return cmd
 }
 
-func (opts *Patch) Run(cmd *cobra.Command, args []string) error {
+func (opts *Patch) Run(ctx context.Context, args []string) error {
 	if len(opts.Ignores) == 0 {
 		opts.Ignores = []string{
 			"FILE_PATH_CHANGES",
@@ -63,8 +64,6 @@ func (opts *Patch) Run(cmd *cobra.Command, args []string) error {
 			"EMAIL_SUBJECT",
 		}
 	}
-
-	ctx := cmd.Context()
 
 	ghOrg, ghRepo, ghPrId, err := cmdutils.ParseOrgRepoAndPullRequestArgs(args)
 	if err != nil {

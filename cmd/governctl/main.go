@@ -6,6 +6,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/rancher/wrangler/pkg/signals"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"kraftkit.sh/cmdfactory"
 	kitcfg "kraftkit.sh/config"
 	"kraftkit.sh/iostreams"
@@ -57,8 +59,8 @@ func New() *cobra.Command {
 	return cmd
 }
 
-func (*GovernCtl) Run(cmd *cobra.Command, _ []string) error {
-	return cmd.Help()
+func (*GovernCtl) Run(_ context.Context, _ []string) error {
+	return pflag.ErrHelp
 }
 
 func main() {
