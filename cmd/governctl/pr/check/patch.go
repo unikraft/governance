@@ -60,6 +60,7 @@ func (opts *Patch) Run(cmd *cobra.Command, args []string) error {
 			"OBSOLETE",
 			"ASSIGN_IN_IF",
 			"NEW_TYPEDEFS",
+			"EMAIL_SUBJECT",
 		}
 	}
 
@@ -80,7 +81,11 @@ func (opts *Patch) Run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	pull, err := ghpr.NewPullRequestFromID(ctx, ghClient, ghOrg, ghRepo, ghPrId,
+	pull, err := ghpr.NewPullRequestFromID(ctx,
+		ghClient,
+		ghOrg,
+		ghRepo,
+		ghPrId,
 		ghpr.WithBaseBranch(opts.BaseBranch),
 		ghpr.WithWorkdir(kitcfg.G[config.Config](ctx).TempDir),
 	)
