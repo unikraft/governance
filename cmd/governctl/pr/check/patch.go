@@ -179,7 +179,7 @@ func (opts *Patch) Run(cmd *cobra.Command, args []string) error {
 					note.File,
 					note.Line,
 					note.Type,
-					fmt.Sprintf("%s:%d-%d: %s", note.File, note.Line, note.Line, note.Message),
+					fmt.Sprintf("(%s) %s:%d-%d: %s", patch.Hash[0:7], note.File, note.Line, note.Line, note.Message),
 				)
 			}
 		}
@@ -208,9 +208,11 @@ func (opts *Patch) Run(cmd *cobra.Command, args []string) error {
 		defer iostreams.G(ctx).StopPager()
 	}
 
-	err = table.Render(iostreams.G(ctx).Out)
-	if err != nil {
-		return err
+	if os.Getenv("GITHUB_ACTIONS") == "" {
+		err = table.Render(iostreams.G(ctx).Out)
+		if err != nil {
+			return err
+		}
 	}
 
 	if errors > 0 || warnings > 0 {
