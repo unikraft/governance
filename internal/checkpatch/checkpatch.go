@@ -106,10 +106,6 @@ func NewCheckpatch(ctx context.Context, file string, opts ...PatchOption) (*Patc
 
 	for _, line := range strings.Split(strings.TrimSuffix(b.String(), "\n"), "\n") {
 		if warning := strings.TrimPrefix(line, "WARNING:"); len(warning) < len(line) {
-			if note != nil {
-				patch.notes = append(patch.notes, note)
-			}
-
 			split := strings.SplitN(warning, ":", 2)
 			if len(split) != 2 {
 				return nil, fmt.Errorf("malformed checkpatch line '%s': expected ':'", line)
@@ -121,12 +117,9 @@ func NewCheckpatch(ctx context.Context, file string, opts ...PatchOption) (*Patc
 				Message: strings.TrimSpace(split[1]),
 				Excerpt: make([]string, 0),
 			}
+			patch.notes = append(patch.notes, note)
 
 		} else if erro := strings.TrimPrefix(line, "ERROR:"); len(erro) < len(line) {
-			if note != nil {
-				patch.notes = append(patch.notes, note)
-			}
-
 			split := strings.SplitN(erro, ":", 2)
 			if len(split) != 2 {
 				return nil, fmt.Errorf("malformed checkpatch line '%s': expected ':'", line)
@@ -138,6 +131,7 @@ func NewCheckpatch(ctx context.Context, file string, opts ...PatchOption) (*Patc
 				Message: strings.TrimSpace(split[1]),
 				Excerpt: make([]string, 0),
 			}
+			patch.notes = append(patch.notes, note)
 
 		} else if strings.HasPrefix(line, "total:") {
 			break
