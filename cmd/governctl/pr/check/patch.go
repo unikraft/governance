@@ -186,12 +186,14 @@ func (opts *Patch) Run(cmd *cobra.Command, args []string) error {
 		os.RemoveAll(pull.Workdir())
 	}
 
-	err = iostreams.G(ctx).StartPager()
-	if err != nil {
-		log.G(ctx).Errorf("error starting pager: %v", err)
-	}
+	if !kitcfg.G[config.Config](ctx).NoRender {
+		err = iostreams.G(ctx).StartPager()
+		if err != nil {
+			log.G(ctx).Errorf("error starting pager: %v", err)
+		}
 
-	defer iostreams.G(ctx).StopPager()
+		defer iostreams.G(ctx).StopPager()
+	}
 
 	err = table.Render(iostreams.G(ctx).Out)
 	if err != nil {
@@ -199,7 +201,7 @@ func (opts *Patch) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	if errors > 0 || warnings > 0 {
-		return fmt.Errorf("checkpatch failed with %d errors and %d warnings", errors, warnings)
+		return fmt.Errorf("summary: checkpatch failed with %d errors and %d warnings", errors, warnings)
 	}
 
 	return nil
