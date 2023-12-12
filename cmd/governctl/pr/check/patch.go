@@ -111,7 +111,7 @@ func (opts *Patch) Run(cmd *cobra.Command, args []string) error {
 		tableprinter.WithOutputFormatFromString(opts.Output),
 	}
 
-	if !kitcfg.G[config.Config](ctx).NoRender {
+	if kitcfg.G[config.Config](ctx).NoRender {
 		topts = append(topts, tableprinter.WithMaxWidth(10000))
 	} else {
 		topts = append(topts, tableprinter.WithMaxWidth(iostreams.G(ctx).TerminalWidth()))
@@ -174,7 +174,7 @@ func (opts *Patch) Run(cmd *cobra.Command, args []string) error {
 			// Set an annotations on the PR if run in a GitHub Actions context.
 			// See: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-error-message
 			if os.Getenv("GITHUB_ACTIONS") == "true" && len(note.File) > 0 && note.Line > 0 {
-				fmt.Printf("echo ::%s file=%s,line=%d::%s", note.Level, note.File, note.Line, note.Message)
+				fmt.Printf("::%s file=%s,line=%d,title=%s::%s\n", note.Level, note.File, note.Line, note.Type, note.Message)
 			}
 		}
 	}
