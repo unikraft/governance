@@ -26,6 +26,7 @@ import (
 	"github.com/unikraft/governance/internal/config"
 	"github.com/unikraft/governance/internal/ghapi"
 	"github.com/unikraft/governance/internal/ghpr"
+	"github.com/unikraft/governance/internal/patch"
 )
 
 type Merge struct {
@@ -110,6 +111,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 		}
 	}()
 
+	// Check if the pull request is mergable
 	if !opts.NoCheckMergable {
 		log.G(ctx).Info("checking if the pull request satisfies merge requirements")
 		mergable, results, err := pull.SatisfiesMergeRequirements(ctx,
@@ -150,16 +152,19 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 		}
 	}
 
+	// Add trailer to close original PR
 	opts.Trailers = append(opts.Trailers,
 		fmt.Sprintf("GitHub-Closes: #%d", ghPrId),
 	)
 
+	// Add tested-by trailer if we're running in GitHub Actions
 	if os.Getenv("GITHUB_ACTIONS") == "yes" {
 		opts.Trailers = append(opts.Trailers,
 			"Tested-by: GitHub Actions <monkey+github-actions@unikraft.io>",
 		)
 	}
 
+	// Create temp directory
 	tempDir := kitcfg.G[config.Config](ctx).TempDir
 	if tempDir == "" {
 		tempDir, err = os.MkdirTemp("", "governctl-pr-merge-*")
@@ -172,6 +177,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 		}()
 	}
 
+	// Clone repo in temp directory
 	if opts.Repo == "" {
 		opts.Repo = filepath.Join(tempDir, fmt.Sprintf("unikraft-pr-%d-patched", ghPrId))
 
@@ -188,25 +194,153 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 		}
 	}
 
+	// Add commiter name
 	if opts.CommitterName != "" {
 		cmd := exec.Command("git", "-C", opts.Repo, "config", "user.name", opts.CommitterName)
 		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("could not apply patch: %w", err)
+			return fmt.Errorf("could not config user: %w", err)
 		}
 	}
 
+	// Add commiter email
 	if opts.CommitterEmail != "" {
 		cmd := exec.Command("git", "-C", opts.Repo, "config", "user.email", opts.CommitterEmail)
 		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("could not apply patch: %w", err)
+			return fmt.Errorf("could not config email: %w", err)
 		}
 	}
 
-	for _, patch := range pull.Patches() {
+	// Create "<base>-PRID" branch and push it to remote
+	// Checkout "<base>" branch
+	cmd := exec.Command("git", "-C", opts.Repo, "checkout", opts.BaseBranch)
+	cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+	cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("could not checkout base: %w", err)
+	}
+
+	// Temporary branch
+	tempBranch := fmt.Sprintf("%s-%d", opts.BaseBranch, ghPrId)
+
+	// Create "<base>-PRID" branch
+	cmd = exec.Command("git", "-C", opts.Repo, "checkout", "-b", tempBranch)
+	cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+	cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("could not checkout base: %w", err)
+	}
+
+	// Create <base>-PRID" branch remotely also
+	cmd = exec.Command(
+		"git",
+		"-C", opts.Repo,
+		"remote", "add", "patched",
+		fmt.Sprintf("https://%s:%s@github.com/%s/%s.git",
+			kitcfg.G[config.Config](ctx).GithubUser,
+			kitcfg.G[config.Config](ctx).GithubToken,
+			ghOrg,
+			ghRepo,
+		))
+	cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+	cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("could not apply patch: %w", err)
+	}
+
+	if !kitcfg.G[config.Config](ctx).DryRun {
+		// Push "<base>-PRID" branch to given repo
+		cmd = exec.Command("git", "-C", opts.Repo, "push", "-u", "patched", tempBranch)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("could not create remote branch %s: %w", tempBranch, err)
+		}
+
+		defer func() {
+			// Delete remote "<base>-PRID" branch at the end
+			// Use git and run: git push -d <remote_name> <branchname>
+			cmd = exec.Command("git", "-C", opts.Repo, "push", "-d", "patched", tempBranch)
+			cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+			cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+			if err := cmd.Run(); err != nil {
+				fmt.Printf("%s\n", fmt.Errorf("could not delete remote branch %s: %w", tempBranch, err))
+			}
+		}()
+
+		// Backup old token to a string
+		// Use gh and run: gh auth token
+		var output []byte
+		cmd = exec.Command("gh", "auth", "token")
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		if output, err = cmd.Output(); err != nil {
+			return fmt.Errorf("could not backup token: %w", err)
+		}
+		token := string(output)
+
+		if !strings.HasPrefix(token, "gh") {
+			return fmt.Errorf("could not backup token, invalid format (try running `gh auth token` manually): %w", err)
+		}
+
+		// Login with given token
+		// Use gh and run: gh auth login --with-token < <token>
+		cmd = exec.Command("gh", "auth", "login", "--with-token")
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+		cmd.Stdin = bytes.NewReader([]byte(kitcfg.G[config.Config](ctx).GithubToken))
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("could not update token: %w", err)
+		}
+
+		// Change PR base branch to "<base>-PRID"
+		// Use gh and run: gh pr edit <PRID> --base <base-PRID>
+		cmd = exec.Command("gh", "pr", "edit", fmt.Sprintf("%d", ghPrId), "--base", tempBranch, "-R", fmt.Sprintf("%s/%s", ghOrg, ghRepo))
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("could not change base branch to %s: %w", tempBranch, err)
+		}
+
+		// Rebase & Merge PR on top of "<base>-PRID"
+		// Use gh and run: gh pr merge <PRID> --rebase --delete-branch
+		cmd = exec.Command("gh", "pr", "merge", fmt.Sprintf("%d", ghPrId), "--rebase", "-R", fmt.Sprintf("%s/%s", ghOrg, ghRepo))
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("could not merge with rebase into %s: %w", tempBranch, err)
+		}
+
+		// Replace token with the original one
+		// Use gh and run: gh auth login --with-token < <token>
+		cmd = exec.Command("gh", "auth", "login", "--with-token")
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+		cmd.Stdin = bytes.NewReader([]byte(token))
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("could not update token: %w", err)
+		}
+	}
+
+	// Move back to "<base>" branch
+	cmd = exec.Command("git", "-C", opts.Repo, "checkout", opts.BaseBranch)
+	cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+	cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("could not checkout base: %w", err)
+	}
+
+	// Add trailers to every commit added in "<base>-PRID"
+	// Reverse order of array of patches (they are currently reversed starting from HEAD)
+	invertedPatches := make([]*patch.Patch, len(pull.Patches()))
+
+	for i, patch := range pull.Patches() {
+		invertedPatches[len(pull.Patches())-1-i] = patch
+	}
+
+	for _, patch := range invertedPatches {
 		log.G(ctx).
 			WithField("title", patch.Title).
 			Info("generating patch")
@@ -222,30 +356,16 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 		}
 	}
 
+	// Add remote with origin "<base>" and push
 	if opts.Push {
 		log.G(ctx).Info("pushing to remote")
-
-		cmd := exec.Command(
-			"git",
-			"-C", opts.Repo,
-			"remote", "add", "patched",
-			fmt.Sprintf("https://%s:%s@github.com/%s/%s.git",
-				kitcfg.G[config.Config](ctx).GithubUser,
-				kitcfg.G[config.Config](ctx).GithubToken,
-				ghOrg,
-				ghRepo,
-			))
-		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
-		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("could not apply patch: %w", err)
-		}
 
 		if !kitcfg.G[config.Config](ctx).DryRun {
 			cmd = exec.Command(
 				"git",
 				"-C", opts.Repo,
 				"push", "-u", "patched",
+				opts.BaseBranch,
 			)
 			cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
 			cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
