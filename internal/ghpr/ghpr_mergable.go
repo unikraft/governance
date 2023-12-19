@@ -113,6 +113,9 @@ func (pr *PullRequest) SatisfiesMergeRequirements(ctx context.Context, opts ...P
 		return false, nil, fmt.Errorf("could not list pull request reviews: %w", err)
 	}
 
+	var existingReviewers []string
+	var existingApprovers []string
+
 	for _, r := range reviews {
 		if ok, matches := mopts.requestsApproverRegex(*r.Body); ok {
 			if mopts.requestsApproverTeam(ctx, *pull, *r.User.Login) {
@@ -120,12 +123,23 @@ func (pr *PullRequest) SatisfiesMergeRequirements(ctx context.Context, opts ...P
 					continue
 				}
 
-				for k, v := range matches {
-					if _, ok := res[k]; !ok {
-						res[k] = make([]string, 0)
+				var alreadyApproved bool
+				for _, approver := range existingApprovers {
+					if strings.Contains(approver, *r.User.Login) {
+						alreadyApproved = true
+						break
 					}
-					res[k] = append(res[k], v)
-					prApprovals++
+				}
+
+				if !alreadyApproved {
+					for k, v := range matches {
+						if _, ok := res[k]; !ok {
+							res[k] = make([]string, 0)
+						}
+						res[k] = append(res[k], v)
+						prApprovals++
+						existingApprovers = append(existingApprovers, *r.User.Login)
+					}
 				}
 			}
 		}
@@ -136,12 +150,23 @@ func (pr *PullRequest) SatisfiesMergeRequirements(ctx context.Context, opts ...P
 					continue
 				}
 
-				for k, v := range matches {
-					if _, ok := res[k]; !ok {
-						res[k] = make([]string, 0)
+				var alreadyReviewed bool
+				for _, reviewer := range existingReviewers {
+					if strings.Contains(reviewer, *r.User.Login) {
+						alreadyReviewed = true
+						break
 					}
-					res[k] = append(res[k], v)
-					prReviews++
+				}
+
+				if !alreadyReviewed {
+					for k, v := range matches {
+						if _, ok := res[k]; !ok {
+							res[k] = make([]string, 0)
+						}
+						res[k] = append(res[k], v)
+						prReviews++
+						existingReviewers = append(existingReviewers, *r.User.Login)
+					}
 				}
 			}
 		}
