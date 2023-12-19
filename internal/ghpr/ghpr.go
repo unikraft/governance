@@ -19,10 +19,13 @@ import (
 	gitconfig "github.com/go-git/go-git/v5/config"
 	gitplumbing "github.com/go-git/go-git/v5/plumbing"
 	gitobject "github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/google/go-github/v32/github"
 	"github.com/sirupsen/logrus"
+	kitcfg "kraftkit.sh/config"
 	"kraftkit.sh/log"
 
+	"github.com/unikraft/governance/internal/config"
 	"github.com/unikraft/governance/internal/ghapi"
 	"github.com/unikraft/governance/internal/patch"
 )
@@ -84,6 +87,10 @@ func NewPullRequestFromID(ctx context.Context, client *ghapi.GithubClient, ghOrg
 			Info("cloning git repository")
 		repo, err = git.PlainClone(pr.localRepo, false, &git.CloneOptions{
 			URL: ghOrigin,
+			Auth: &http.BasicAuth{
+				Username: kitcfg.G[config.Config](ctx).GithubUser,
+				Password: kitcfg.G[config.Config](ctx).GithubToken,
+			},
 		})
 		if err != nil {
 			return nil, fmt.Errorf("could not clone repository: %w", err)

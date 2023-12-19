@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/hairyhenderson/go-codeowners"
 	"github.com/spf13/cobra"
 	"github.com/waigani/diffparser"
@@ -233,6 +234,10 @@ func (opts *Reviewers) Run(ctx context.Context, args []string) error {
 			Info("cloning git repository")
 		_, err := git.PlainClone(localRepo, false, &git.CloneOptions{
 			URL: ghOrigin,
+			Auth: &http.BasicAuth{
+				Username: kitcfg.G[config.Config](ctx).GithubUser,
+				Password: kitcfg.G[config.Config](ctx).GithubToken,
+			},
 		})
 		if err != nil {
 			return fmt.Errorf("could not clone repository: %w", err)
