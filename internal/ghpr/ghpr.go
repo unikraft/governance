@@ -85,13 +85,19 @@ func NewPullRequestFromID(ctx context.Context, client *ghapi.GithubClient, ghOrg
 			WithField("from", ghOrigin).
 			WithField("to", pr.localRepo).
 			Info("cloning git repository")
-		repo, err = git.PlainClone(pr.localRepo, false, &git.CloneOptions{
+
+		copts := &git.CloneOptions{
 			URL: ghOrigin,
 			Auth: &http.BasicAuth{
 				Username: kitcfg.G[config.Config](ctx).GithubUser,
 				Password: kitcfg.G[config.Config](ctx).GithubToken,
 			},
-		})
+		}
+
+		if pr.BaseBranch() != "" {
+			copts.ReferenceName = gitplumbing.ReferenceName(pr.BaseBranch())
+		}
+		repo, err = git.PlainClone(pr.localRepo, false, copts)
 		if err != nil {
 			return nil, fmt.Errorf("could not clone repository: %w", err)
 		}
@@ -138,6 +144,10 @@ func NewPullRequestFromID(ctx context.Context, client *ghapi.GithubClient, ghOrg
 	if err := repo.Fetch(&git.FetchOptions{
 		RefSpecs: []gitconfig.RefSpec{
 			gitconfig.RefSpec(fmt.Sprintf("%s:%s", refname, refname)),
+		},
+		Auth: &http.BasicAuth{
+			Username: kitcfg.G[config.Config](ctx).GithubUser,
+			Password: kitcfg.G[config.Config](ctx).GithubToken,
 		},
 	}); err != nil && !strings.Contains(err.Error(), "already up-to-date") {
 		return nil, fmt.Errorf("could not fetch pull request '%s': %w", refname, err)
