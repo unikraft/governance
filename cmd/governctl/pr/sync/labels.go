@@ -11,10 +11,10 @@ import (
 	"os"
 	"path"
 
+	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/spf13/cobra"
 	"github.com/waigani/diffparser"
-	git "gopkg.in/src-d/go-git.v4"
 	"kraftkit.sh/cmdfactory"
 	kitcfg "kraftkit.sh/config"
 	"kraftkit.sh/log"
