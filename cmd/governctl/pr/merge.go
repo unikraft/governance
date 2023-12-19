@@ -292,7 +292,9 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 		}
 		token := string(output)
 
-		if !strings.HasPrefix(token, "gh") {
+		if strings.HasPrefix(token, "no oauth token found") {
+			token = ""
+		} else if !strings.HasPrefix(token, "gh") {
 			return fmt.Errorf("could not backup token, invalid format (try running `gh auth token` manually): %w", err)
 		}
 
@@ -303,7 +305,9 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		cmd.Stdin = bytes.NewReader([]byte(kitcfg.G[config.Config](ctx).GithubToken))
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("could not update token: %w", err)
+			if token == "" {
+				return fmt.Errorf("could not update token and no token already exists: %w", err)
+			}
 		}
 
 		// Change PR base branch to "<base>-PRID"
@@ -324,14 +328,16 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 			return fmt.Errorf("could not merge with rebase into %s: %w", tempBranch, err)
 		}
 
-		// Replace token with the original one
-		// Use gh and run: gh auth login --with-token < <token>
-		cmd = exec.Command("gh", "auth", "login", "--with-token")
-		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
-		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
-		cmd.Stdin = bytes.NewReader([]byte(token))
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("could not update token: %w", err)
+		if token != "" {
+			// Replace token with the original one
+			// Use gh and run: gh auth login --with-token < <token>
+			cmd = exec.Command("gh", "auth", "login", "--with-token")
+			cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+			cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+			cmd.Stdin = bytes.NewReader([]byte(token))
+			if err := cmd.Run(); err != nil {
+				return fmt.Errorf("could not update token: %w", err)
+			}
 		}
 	}
 
