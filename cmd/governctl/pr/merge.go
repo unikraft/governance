@@ -16,6 +16,7 @@ import (
 	"unicode"
 
 	git "github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"kraftkit.sh/cmdfactory"
@@ -188,6 +189,10 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 
 		if _, err := git.PlainClone(opts.Repo, false, &git.CloneOptions{
 			URL: *pull.Metadata().Base.Repo.CloneURL,
+			Auth: &http.BasicAuth{
+				Username: kitcfg.G[config.Config](ctx).GithubUser,
+				Password: kitcfg.G[config.Config](ctx).GithubToken,
+			},
 		}); err != nil {
 			log.G(ctx).Fatalf("could not clone repository: %s", err)
 			os.Exit(1)
