@@ -289,13 +289,13 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 		cmd = exec.Command("gh", "auth", "token")
 		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
 		if output, err = cmd.Output(); err != nil {
-			return fmt.Errorf("could not backup token: %w", err)
-		}
-		token = string(output)
-
-		if strings.HasPrefix(token, "no oauth token found") {
+			log.G(ctx).Warn("no token to back up, skipping")
 			token = ""
-		} else if !strings.HasPrefix(token, "gh") {
+		} else {
+			token = string(output)
+		}
+
+		if token != "" && !strings.HasPrefix(token, "gh") {
 			return fmt.Errorf("could not backup token, invalid format (try running `gh auth token` manually): %w", err)
 		}
 
