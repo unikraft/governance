@@ -97,5 +97,5 @@ func main() {
 	ctx = iostreams.WithIOStreams(ctx, iostreams.System())
 
 	// Execute the main command
-	cmdfactory.Main(ctx, cmd)
+	os.Exit(cmdfactory.Main(ctx, cmd))
 }
