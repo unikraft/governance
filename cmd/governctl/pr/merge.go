@@ -262,6 +262,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 		return fmt.Errorf("could not apply patch: %w", err)
 	}
 
+	var token string
 	if !kitcfg.G[config.Config](ctx).DryRun {
 		// Push "<base>-PRID" branch to given repo
 		cmd = exec.Command("git", "-C", opts.Repo, "push", "-u", "patched", tempBranch)
@@ -290,7 +291,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 		if output, err = cmd.Output(); err != nil {
 			return fmt.Errorf("could not backup token: %w", err)
 		}
-		token := string(output)
+		token = string(output)
 
 		if strings.HasPrefix(token, "no oauth token found") {
 			token = ""
@@ -327,18 +328,6 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("could not merge with rebase into %s: %w", tempBranch, err)
 		}
-
-		if token != "" {
-			// Replace token with the original one
-			// Use gh and run: gh auth login --with-token < <token>
-			cmd = exec.Command("gh", "auth", "login", "--with-token")
-			cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
-			cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
-			cmd.Stdin = bytes.NewReader([]byte(token))
-			if err := cmd.Run(); err != nil {
-				return fmt.Errorf("could not update token: %w", err)
-			}
-		}
 	}
 
 	// Move back to "<base>" branch
@@ -373,22 +362,44 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 		}
 	}
 
-	// Add remote with origin "<base>" and push
-	if opts.Push {
+	if !kitcfg.G[config.Config](ctx).DryRun && opts.Push {
+		// Add remote with origin "<base>" and push
 		log.G(ctx).Info("pushing to remote")
+		cmd = exec.Command(
+			"git",
+			"-C", opts.Repo,
+			"push", "-u", "patched",
+			opts.BaseBranch,
+		)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("could not apply patch: %w", err)
+		}
 
-		if !kitcfg.G[config.Config](ctx).DryRun {
-			cmd = exec.Command(
-				"git",
-				"-C", opts.Repo,
-				"push", "-u", "patched",
-				opts.BaseBranch,
-			)
-			cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
-			cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
-			if err := cmd.Run(); err != nil {
-				return fmt.Errorf("could not apply patch: %w", err)
-			}
+		// Remove 'merge' label from PR and add 'ci/merged' label
+		log.G(ctx).Info("removing 'merge' label and adding 'ci/merged' label")
+		cmd = exec.Command("gh", "pr", "edit", fmt.Sprintf("%d", ghPrId),
+			"--remove-label", "merge",
+			"--add-label", "ci/merged",
+			"-R", fmt.Sprintf("%s/%s", ghOrg, ghRepo),
+		)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("could not change label from 'merge' to 'ci/merged': %w", err)
+		}
+	}
+
+	if !kitcfg.G[config.Config](ctx).DryRun && token != "" {
+		// Replace token with the original one
+		// Use gh and run: gh auth login --with-token < <token>
+		cmd = exec.Command("gh", "auth", "login", "--with-token")
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+		cmd.Stdin = bytes.NewReader([]byte(token))
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("could not update token: %w", err)
 		}
 	}
 
