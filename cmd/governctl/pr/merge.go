@@ -353,6 +353,11 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 
 		patch.Trailers = append(patch.Trailers, opts.Trailers...)
 
+		// Bug in git: it starts reading from triple dashes and discard everything
+		// till it finds "diff", meaning, for example, dependabot PRs will have
+		// truncated messages. This is fine for now.
+		patch.Message = strings.ReplaceAll(patch.Message, "---", "...")
+
 		cmd := exec.Command("git", "-C", opts.Repo, "am", "--3way")
 		cmd.Stdin = bytes.NewReader(patch.Bytes())
 		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
