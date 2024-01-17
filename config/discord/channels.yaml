@@ -1,0 +1,65 @@
+- category: Hackathons
+  private: false
+  channels:
+  - name: hack-general
+    emoji: 🔨
+    description: null
+    type: text
+    private: false
+    archive: false
+
+  - name: hack-athens23
+    emoji: 🏛️
+    description: Unikraft Athens Hackathon 2023
+    type: text
+    private: false
+    archive: false
+  
+  - name: hack-amsterdam23
+    emoji: 🇳🇱
+    description: https://unikraft.org/community/hackathons/2023-04-amsterdam/, Unikraft Amsterdam Hackathon 2023
+    type: text
+    private: false
+    archive: false
+  
+  - name: hack-porto23
+    emoji: 🇵🇹
+    description: Unikraft Porto Hackathon 2023
+    type: text
+    private: false
+    archive: false
+  
+  - name: usoc23
+    emoji: 🐒
+    description: https://unikraft.org/community/hackathons/usoc23/
+    type: text
+    private: false
+    archive: false
+  
+  - name: hack-vancouver23
+    emoji: 🍁
+    description: https://unikraft.org/hackathons/2023-09-vancouver
+    type: text
+    private: false
+    archive: false
+  
+  - name: hack-aveiro23
+    emoji: 🍷
+    description: https://unikraft.org/hackathons/2023-09-aveiro
+    type: text
+    private: false
+    archive: false
+  
+  - name: hacktoberfest-2023
+    emoji: 🔧
+    description: null
+    type: text
+    private: false
+    archive: false
+  
+  - name: hack-voice
+    emoji: 🎙️
+    description: null
+    type: voice
+    private: false
+    archive: false
