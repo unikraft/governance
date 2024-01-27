@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/sirupsen/logrus"
@@ -33,6 +34,12 @@ type Patch struct {
 	BaseBranch       string   `long:"base" env:"GOVERN_BASE_BRANCH" usage:"Set the base branch name that the PR will be rebased onto"`
 	Ignores          []string `long:"ignore" env:"GOVERN_IGNORES" usage:"Ignore one or many checkpatch checks"`
 }
+
+const (
+	// checkpatchIgnore is the string that is used to ignore a checkpatch check
+	// in a commit message.
+	checkpatchIgnore = "Checkpatch-Ignore: "
+)
 
 func NewPatch() *cobra.Command {
 	cmd, err := cmdfactory.New(&Patch{}, cobra.Command{
@@ -90,6 +97,21 @@ func (opts *Patch) Run(ctx context.Context, args []string) error {
 	)
 	if err != nil {
 		return fmt.Errorf("could not prepare pull request: %w", err)
+	}
+
+	for _, patch := range pull.Patches() {
+		for _, line := range strings.Split(patch.Message, "\n") {
+			if !strings.HasPrefix(line, checkpatchIgnore) {
+				continue
+			}
+
+			ignoreList := strings.SplitN(line, checkpatchIgnore, 2)[1]
+			for _, i := range strings.Split(ignoreList, ",") {
+				opts.Ignores = append(opts.Ignores,
+					strings.ToUpper(strings.TrimSpace(i)),
+				)
+			}
+		}
 	}
 
 	// Use a well-known path of the checkpatch.pl script contained within the
