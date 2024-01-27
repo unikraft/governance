@@ -45,7 +45,7 @@ type PullRequest struct {
 // NewPullRequestFromID fetches information about a pull request via GitHub as
 // well as preparing the pull request as a series of patches that can be parsed
 // internally.
-func NewPullRequestFromID(ctx context.Context, client *ghapi.GithubClient, ghOrg, ghRepo string, ghPrId int, opts ...PullRequestOption) (*PullRequest, error) {
+func NewPullRequestFromID(ctx context.Context, client *ghapi.GithubClient, ghOrg, ghRepo, committerName, committerEmail string, ghPrId int, opts ...PullRequestOption) (*PullRequest, error) {
 	var err error
 
 	pr := PullRequest{
@@ -166,9 +166,32 @@ func NewPullRequestFromID(ctx context.Context, client *ghapi.GithubClient, ghOrg
 		return nil, fmt.Errorf("could not checkout branch '%s': %w", refname, err)
 	}
 
+	log.G(ctx).Infof("configuring committer name and email")
+
+	// Add commiter name
+	if committerName != "" {
+		cmd := exec.Command("git", "-C", pr.localRepo, "config", "user.name", committerName)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+		if err := cmd.Run(); err != nil {
+			return nil, fmt.Errorf("could not config user: %w", err)
+		}
+	}
+
+	// Add commiter email
+	if committerEmail != "" {
+		cmd := exec.Command("git", "-C", pr.localRepo, "config", "user.email", committerEmail)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+		if err := cmd.Run(); err != nil {
+			return nil, fmt.Errorf("could not config email: %w", err)
+		}
+	}
+
 	log.G(ctx).Infof("rebasing pull request's branch on to '%s' branch", pr.baseBranch)
 
-	rebase := exec.Command(
+	rebase := exec.CommandContext(
+		ctx,
 		"git",
 		"-C", pr.localRepo,
 		"rebase",

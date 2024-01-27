@@ -28,6 +28,8 @@ type Mergable struct {
 	ApproverComments   []string `long:"approver-comments" env:"GOVERN_APPROVER_COMMENTS" usage:"Regular expression that an approver writes"`
 	ApproverTeams      []string `long:"approver-teams" env:"GOVERN_APPROVER_TEAMS" usage:"The GitHub team that the approver must be a part of to be considered an approver"`
 	ApproveStates      []string `long:"approve-states" env:"GOVERN_APPROVE_STATES" usage:"The state of the GitHub approval from the assignee" default:"approve"`
+	CommitterEmail     string   `long:"committer-email" short:"e" env:"GOVERN_COMMITTER_EMAIL" usage:"Set the Git committer author's email"`
+	CommitterName      string   `long:"committer-name" short:"n" env:"GOVERN_COMMITTER_NAME" usage:"Set the Git committer author's name"`
 	IgnoreLabels       []string `long:"ignore-labels" env:"GOVERN_IGNORE_LABELS" usage:"Ignore the PR if it has any of these labels"`
 	IgnoreStates       []string `long:"ignore-states" env:"GOVERN_IGNORE_STATES" usage:"Ignore the PR if it has any of these states"`
 	Labels             []string `long:"labels" env:"GOVERN_LABELS" usage:"The PR must have these labels to be considered mergable"`
@@ -89,6 +91,8 @@ func (opts *Mergable) Run(ctx context.Context, args []string) error {
 		ghClient,
 		ghOrg,
 		ghRepo,
+		opts.CommitterName,
+		opts.CommitterEmail,
 		ghPrId,
 		// ghpr.WithBaseBranch(opts.BaseBranch),
 		ghpr.WithWorkdir(kitcfg.G[config.Config](ctx).TempDir),

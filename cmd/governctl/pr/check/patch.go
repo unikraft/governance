@@ -29,6 +29,8 @@ import (
 )
 
 type Patch struct {
+	CommitterEmail   string   `long:"committer-email" short:"e" env:"GOVERN_COMMITTER_EMAIL" usage:"Set the Git committer author's email"`
+	CommitterName    string   `long:"committer-name" short:"n" env:"GOVERN_COMMITTER_NAME" usage:"Set the Git committer author's name"`
 	Output           string   `long:"output" short:"o" env:"GOVERN_OUTPUT" usage:"Set the output format of choice [table, html, json, yaml]" default:"table"`
 	CheckpatchScript string   `long:"checkpatch-script" env:"GOVERN_CHECKPATCH_SCRIPT" usage:"Use an existing checkpatch.pl script"`
 	BaseBranch       string   `long:"base" env:"GOVERN_BASE_BRANCH" usage:"Set the base branch name that the PR will be rebased onto"`
@@ -91,6 +93,8 @@ func (opts *Patch) Run(ctx context.Context, args []string) error {
 		ghClient,
 		ghOrg,
 		ghRepo,
+		opts.CommitterName,
+		opts.CommitterEmail,
 		ghPrId,
 		ghpr.WithBaseBranch(opts.BaseBranch),
 		ghpr.WithWorkdir(kitcfg.G[config.Config](ctx).TempDir),

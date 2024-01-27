@@ -95,6 +95,8 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 		ghClient,
 		ghOrg,
 		ghRepo,
+		opts.CommitterName,
+		opts.CommitterEmail,
 		ghPrId,
 		ghpr.WithBaseBranch(opts.BaseBranch),
 		ghpr.WithWorkdir(kitcfg.G[config.Config](ctx).TempDir),
