@@ -38,7 +38,7 @@ func (pr *PullRequest) SatisfiesMergeRequirements(ctx context.Context, opts ...P
 	}
 
 	pull, err := mopts.ghClient.GetPullRequest(ctx, pr.ghOrg, pr.ghRepo, pr.ghPrId)
-	if err != nil {
+	if err != nil || pull == nil {
 		return false, nil, fmt.Errorf("could not get pull request: %w", err)
 	}
 
