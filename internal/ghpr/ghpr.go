@@ -195,8 +195,6 @@ func NewPullRequestFromID(ctx context.Context, client *ghapi.GithubClient, ghOrg
 		"git",
 		"-C", pr.localRepo,
 		"rebase",
-		"--merge",
-		"--force-rebase",
 		fmt.Sprintf("origin/%s", pr.baseBranch),
 	)
 	rebase.Stdout = log.G(ctx).WriterLevel(logrus.ErrorLevel)
