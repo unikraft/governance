@@ -80,10 +80,6 @@ func (pr *PullRequest) SatisfiesMergeRequirements(ctx context.Context, opts ...P
 	for _, c := range comments {
 		if ok, matches := mopts.requestsApproverRegex(*c.Body); ok {
 			if mopts.requestsApproverTeam(ctx, *pull, *c.User.Login) {
-				if !mopts.requestsApproveState("comment") {
-					continue
-				}
-
 				for k, v := range matches {
 					if _, ok := res[k]; !ok {
 						res[k] = make([]string, 0)
@@ -119,10 +115,6 @@ func (pr *PullRequest) SatisfiesMergeRequirements(ctx context.Context, opts ...P
 	for _, r := range reviews {
 		if ok, matches := mopts.requestsApproverRegex(*r.Body); ok {
 			if mopts.requestsApproverTeam(ctx, *pull, *r.User.Login) {
-				if !mopts.requestsApproveState(*r.State) {
-					continue
-				}
-
 				var alreadyApproved bool
 				for _, approver := range existingApprovers {
 					if strings.Contains(approver, *r.User.Login) {
