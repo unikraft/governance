@@ -71,6 +71,7 @@ func (opts *Patch) Run(ctx context.Context, args []string) error {
 			"ASSIGN_IN_IF",
 			"NEW_TYPEDEFS",
 			"EMAIL_SUBJECT",
+			"AVOID_BUG",
 		}
 	}
 

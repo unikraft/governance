@@ -74,6 +74,8 @@ func NewCheckpatch(ctx context.Context, file string, opts ...PatchOption) (*Patc
 		"--color=never",
 		"--show-types",
 		"--no-tree",
+		"--strict",
+		"--max-line-length=80",
 		file,
 	}
 
