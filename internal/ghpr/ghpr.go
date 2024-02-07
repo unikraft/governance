@@ -45,7 +45,7 @@ type PullRequest struct {
 // NewPullRequestFromID fetches information about a pull request via GitHub as
 // well as preparing the pull request as a series of patches that can be parsed
 // internally.
-func NewPullRequestFromID(ctx context.Context, client *ghapi.GithubClient, ghOrg, ghRepo, committerName, committerEmail string, ghPrId int, opts ...PullRequestOption) (*PullRequest, error) {
+func NewPullRequestFromID(ctx context.Context, client *ghapi.GithubClient, ghOrg, ghRepo, committerName, committerEmail string, ghPrId int, committerGlobal bool, opts ...PullRequestOption) (*PullRequest, error) {
 	var err error
 
 	pr := PullRequest{
@@ -170,7 +170,12 @@ func NewPullRequestFromID(ctx context.Context, client *ghapi.GithubClient, ghOrg
 
 	// Add commiter name
 	if committerName != "" {
-		cmd := exec.Command("git", "-C", pr.localRepo, "config", "user.name", committerName)
+		args := []string{"-C", pr.localRepo, "config"}
+		if committerGlobal {
+			args = append(args, "--global")
+		}
+		args = append(args, "user.name", committerName)
+		cmd := exec.Command("git", args...)
 		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
@@ -180,7 +185,12 @@ func NewPullRequestFromID(ctx context.Context, client *ghapi.GithubClient, ghOrg
 
 	// Add commiter email
 	if committerEmail != "" {
-		cmd := exec.Command("git", "-C", pr.localRepo, "config", "user.email", committerEmail)
+		args := []string{"-C", pr.localRepo, "config"}
+		if committerGlobal {
+			args = append(args, "--global")
+		}
+		args = append(args, "user.email", committerEmail)
+		cmd := exec.Command("git", args...)
 		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
