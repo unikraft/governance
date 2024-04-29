@@ -69,8 +69,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	cmd := New()
+
+	// Set up the global context
+	ctx := signals.SetupSignalContext()
+	ctx = kitcfg.WithConfigManager(ctx, cfgm)
 
 	// Attribute all configuration flags and command-line argument values
 	cmd, args, err := cmd.Find(os.Args[1:])
@@ -82,13 +85,19 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-
-	// Set up the global context
-	ctx := signals.SetupSignalContext()
-	ctx = kitcfg.WithConfigManager(ctx, cfgm)
+	if err := cmd.ParseFlags(os.Args[1:]); err == nil {
+		cmd.DisableFlagParsing = true
+	}
 
 	// Configure the log level
 	logger := logrus.New()
+	formatter := new(log.TextFormatter)
+	formatter.ForceColors = true
+	formatter.ForceFormatting = true
+	formatter.FullTimestamp = true
+	formatter.DisableTimestamp = true
+	logger.Formatter = formatter
+
 	if lvl, err := logrus.ParseLevel(cfgm.Config.LogLevel); err == nil {
 		logger.SetLevel(lvl)
 	}
