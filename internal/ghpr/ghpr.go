@@ -209,7 +209,7 @@ func NewPullRequestFromID(ctx context.Context, client *ghapi.GithubClient, ghOrg
 	)
 	rebase.Stdout = log.G(ctx).WriterLevel(logrus.ErrorLevel)
 	rebase.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
-	if rebase.Run(); err != nil {
+	if err := rebase.Run(); err != nil {
 		return nil, fmt.Errorf("could not rebase: %w", err)
 	}
 
