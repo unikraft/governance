@@ -29,13 +29,13 @@ import (
 )
 
 type Patch struct {
-	CommitterEmail   string   `long:"committer-email" short:"e" env:"GOVERN_COMMITTER_EMAIL" usage:"Set the Git committer author's email"`
-	CommiterGlobal   bool     `long:"committer-global" env:"GOVERN_COMMITTER_GLOBAL" usage:"Set the Git committer author's email/name globally"`
-	CommitterName    string   `long:"committer-name" short:"n" env:"GOVERN_COMMITTER_NAME" usage:"Set the Git committer author's name"`
-	Output           string   `long:"output" short:"o" env:"GOVERN_OUTPUT" usage:"Set the output format of choice [table, html, json, yaml]" default:"table"`
-	CheckpatchScript string   `long:"checkpatch-script" env:"GOVERN_CHECKPATCH_SCRIPT" usage:"Use an existing checkpatch.pl script"`
-	BaseBranch       string   `long:"base" env:"GOVERN_BASE_BRANCH" usage:"Set the base branch name that the PR will be rebased onto"`
-	Ignores          []string `long:"ignore" env:"GOVERN_IGNORES" usage:"Ignore one or many checkpatch checks"`
+	CommitterEmail   string `long:"committer-email" short:"e" env:"GOVERN_COMMITTER_EMAIL" usage:"Set the Git committer author's email"`
+	CommiterGlobal   bool   `long:"committer-global" env:"GOVERN_COMMITTER_GLOBAL" usage:"Set the Git committer author's email/name globally"`
+	CommitterName    string `long:"committer-name" short:"n" env:"GOVERN_COMMITTER_NAME" usage:"Set the Git committer author's name"`
+	Output           string `long:"output" short:"o" env:"GOVERN_OUTPUT" usage:"Set the output format of choice [table, html, json, yaml]" default:"table"`
+	CheckpatchScript string `long:"checkpatch-script" env:"GOVERN_CHECKPATCH_SCRIPT" usage:"Use an existing checkpatch.pl script"`
+	CheckpatchConf   string `long:"checkpatch-conf" env:"GOVERN_CHECKPATCH_CONF" usage:"Use an existing checkpatch.conf file"`
+	BaseBranch       string `long:"base" env:"GOVERN_BASE_BRANCH" usage:"Set the base branch name that the PR will be rebased onto"`
 }
 
 const (
@@ -65,16 +65,7 @@ func NewPatch() *cobra.Command {
 }
 
 func (opts *Patch) Run(ctx context.Context, args []string) error {
-	if len(opts.Ignores) == 0 {
-		opts.Ignores = []string{
-			"FILE_PATH_CHANGES",
-			"OBSOLETE",
-			"ASSIGN_IN_IF",
-			"NEW_TYPEDEFS",
-			"EMAIL_SUBJECT",
-			"AVOID_BUG",
-		}
-	}
+	var extraIgnores []string
 
 	ghOrg, ghRepo, ghPrId, err := cmdutils.ParseOrgRepoAndPullRequestArgs(args)
 	if err != nil {
@@ -114,7 +105,7 @@ func (opts *Patch) Run(ctx context.Context, args []string) error {
 
 			ignoreList := strings.SplitN(line, checkpatchIgnore, 2)[1]
 			for _, i := range strings.Split(ignoreList, ",") {
-				opts.Ignores = append(opts.Ignores,
+				extraIgnores = append(extraIgnores,
 					strings.ToUpper(strings.TrimSpace(i)),
 				)
 			}
@@ -131,6 +122,16 @@ func (opts *Patch) Run(ctx context.Context, args []string) error {
 	}
 	if _, err := os.Stat(opts.CheckpatchScript); err != nil {
 		return fmt.Errorf("could not access checkpatch script at '%s': %w", opts.CheckpatchScript, err)
+	}
+
+	if opts.CheckpatchConf == "" {
+		opts.CheckpatchConf = filepath.Join(
+			pull.LocalRepo(),
+			".checkpatch.conf",
+		)
+	}
+	if _, err := os.Stat(opts.CheckpatchConf); err != nil {
+		return fmt.Errorf("could not access checkpatch configuration at '%s': %w", opts.CheckpatchConf, err)
 	}
 
 	cs := iostreams.G(ctx).ColorScheme()
@@ -174,8 +175,9 @@ func (opts *Patch) Run(ctx context.Context, args []string) error {
 
 		check, err := checkpatch.NewCheckpatch(ctx,
 			patch.Filename,
-			checkpatch.WithIgnore(opts.Ignores...),
+			checkpatch.WithIgnore(extraIgnores...),
 			checkpatch.WithCheckpatchScriptPath(opts.CheckpatchScript),
+			checkpatch.WithCheckpatchConfPath(opts.CheckpatchConf),
 			checkpatch.WithStderr(log.G(ctx).WriterLevel(logrus.TraceLevel)),
 		)
 		if err != nil {

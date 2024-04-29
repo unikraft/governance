@@ -37,3 +37,11 @@ func WithCheckpatchScriptPath(path string) PatchOption {
 		return nil
 	}
 }
+
+// WithCheckpatchConf sets the checkpatch configuration to use.
+func WithCheckpatchConfPath(conf string) PatchOption {
+	return func(patch *Patch) error {
+		patch.conf = conf
+		return nil
+	}
+}

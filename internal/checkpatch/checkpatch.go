@@ -34,6 +34,7 @@ type Patch struct {
 	notes   []*Note
 	stderr  io.Writer
 	script  string
+	conf    string
 }
 
 type NoteLevel string
@@ -70,21 +71,31 @@ func NewCheckpatch(ctx context.Context, file string, opts ...PatchOption) (*Patc
 		patch.script = "checkpatch.pl"
 	}
 
-	args := []string{
-		"--color=never",
-		"--show-types",
-		"--no-tree",
-		"--strict",
-		"--max-line-length=80",
-		file,
+	if patch.conf == "" {
+		patch.conf = ".checkpatch.conf"
 	}
 
+	args := []string{
+		"--color=never",
+	}
+
+	// Add options from the conf file in the PR
+	content, err := os.ReadFile(patch.conf)
+	if err != nil {
+		return nil, fmt.Errorf("could not read checkpatch configuration file: %w", err)
+	}
+	args = append(args, strings.Split(strings.TrimSpace(string(content)), "\n")...)
+
+	// Extra ignores from the commits.
 	if len(patch.ignores) > 0 {
 		args = append(args,
 			"--ignore",
 			strings.Join(patch.ignores, ","),
 		)
 	}
+
+	args = append(args, file)
+
 	c := exec.Command(patch.script, args...)
 	c.Env = os.Environ()
 
