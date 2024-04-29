@@ -35,6 +35,7 @@ type Patch struct {
 	Output           string `long:"output" short:"o" env:"GOVERN_OUTPUT" usage:"Set the output format of choice [table, html, json, yaml]" default:"table"`
 	CheckpatchScript string `long:"checkpatch-script" env:"GOVERN_CHECKPATCH_SCRIPT" usage:"Use an existing checkpatch.pl script"`
 	CheckpatchConf   string `long:"checkpatch-conf" env:"GOVERN_CHECKPATCH_CONF" usage:"Use an existing checkpatch.conf file"`
+	Ignore           string `long:"ignore" env:"GOVERN_IGNORE" usage:"DEPRECATED: Set the types which should be ignored by checkpatch (ignored)"`
 	BaseBranch       string `long:"base" env:"GOVERN_BASE_BRANCH" usage:"Set the base branch name that the PR will be rebased onto"`
 }
 
