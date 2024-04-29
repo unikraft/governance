@@ -68,7 +68,8 @@ func NewPatch() *cobra.Command {
 func (opts *Patch) Run(ctx context.Context, args []string) error {
 	var extraIgnores []string
 
-	fmt.Printf("args: %v\n", args)
+	fmt.Printf("opts: %v\n", opts)
+	fmt.Printf("%d\n", len(opts.CommitterName))
 
 	ghOrg, ghRepo, ghPrId, err := cmdutils.ParseOrgRepoAndPullRequestArgs(args)
 	if err != nil {
