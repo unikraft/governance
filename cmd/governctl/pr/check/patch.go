@@ -29,9 +29,9 @@ import (
 )
 
 type Patch struct {
-	CommitterEmail   string `long:"committer-email" short:"e" env:"GOVERN_COMMITTER_EMAIL" usage:"Set the Git committer author's email"`
-	CommiterGlobal   bool   `long:"committer-global" env:"GOVERN_COMMITTER_GLOBAL" usage:"Set the Git committer author's email/name globally"`
-	CommitterName    string `long:"committer-name" short:"n" env:"GOVERN_COMMITTER_NAME" usage:"Set the Git committer author's name"`
+	CommitterEmail   string `long:"committer-email" short:"e" env:"GOVERN_COMMITTER_EMAIL" usage:"Set the Git committer author's email" default:"monkey@unikraft.org"`
+	CommiterGlobal   bool   `long:"committer-global" env:"GOVERN_COMMITTER_GLOBAL" usage:"Set the Git committer author's email/name globally" default:"true"`
+	CommitterName    string `long:"committer-name" short:"n" env:"GOVERN_COMMITTER_NAME" usage:"Set the Git committer author's name" default:"Unikraft Bot"`
 	Output           string `long:"output" short:"o" env:"GOVERN_OUTPUT" usage:"Set the output format of choice [table, html, json, yaml]" default:"table"`
 	CheckpatchScript string `long:"checkpatch-script" env:"GOVERN_CHECKPATCH_SCRIPT" usage:"Use an existing checkpatch.pl script"`
 	CheckpatchConf   string `long:"checkpatch-conf" env:"GOVERN_CHECKPATCH_CONF" usage:"Use an existing checkpatch.conf file"`
@@ -67,9 +67,6 @@ func NewPatch() *cobra.Command {
 
 func (opts *Patch) Run(ctx context.Context, args []string) error {
 	var extraIgnores []string
-
-	fmt.Printf("opts: %v\n", opts)
-	fmt.Printf("%d\n", len(opts.CommitterName))
 
 	ghOrg, ghRepo, ghPrId, err := cmdutils.ParseOrgRepoAndPullRequestArgs(args)
 	if err != nil {

@@ -7,7 +7,7 @@ package config
 
 type Config struct {
 	DryRun         bool   `long:"dry-run" short:"D" env:"GOVERN_DRY_RUN" usage:"Do not perform any actual change."`
-	GithubUser     string `long:"github-user" env:"GOVERN_GITHUB_USER" usage:"GitHub User account name"`
+	GithubUser     string `long:"github-user" env:"GOVERN_GITHUB_USER" usage:"GitHub User account name" default:"unikraft-bot"`
 	GithubToken    string `long:"github-token" env:"GOVERN_GITHUB_TOKEN" usage:"GitHub API token"`
 	GithubEndpoint string `long:"github-endpoint" env:"GOVERN_GITHUB_ENDPOINT" short:"E" usage:"Alternative GitHub API endpoint (usually GitHub enterprise)"`
 	GithubSkipSSL  bool   `long:"github-skip-ssl" short:"S" env:"GOVERN_GITHUB_SKIP_SSL" usage:"Skip SSL check with GitHub API endpoint"`
