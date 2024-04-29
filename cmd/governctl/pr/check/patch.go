@@ -49,7 +49,7 @@ func NewPatch() *cobra.Command {
 	cmd, err := cmdfactory.New(&Patch{}, cobra.Command{
 		Use:   "patch [OPTIONS] ORG/REPO/PRID",
 		Short: "Run checkpatch against a pull request",
-		Args:  cmdutils.OrgRepoAndPullRequestNumber(),
+		Args:  cobra.MaximumNArgs(2),
 		Annotations: map[string]string{
 			cmdfactory.AnnotationHelpGroup: "pr",
 		},
@@ -67,6 +67,8 @@ func NewPatch() *cobra.Command {
 
 func (opts *Patch) Run(ctx context.Context, args []string) error {
 	var extraIgnores []string
+
+	fmt.Printf("args: %v\n", args)
 
 	ghOrg, ghRepo, ghPrId, err := cmdutils.ParseOrgRepoAndPullRequestArgs(args)
 	if err != nil {

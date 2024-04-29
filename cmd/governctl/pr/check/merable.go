@@ -50,7 +50,7 @@ func NewMergable() *cobra.Command {
 	cmd, err := cmdfactory.New(&Mergable{}, cobra.Command{
 		Use:   "mergable [OPTIONS] ORG/REPO/PRID",
 		Short: "Check whether a PR satisfies the provided merge requirements",
-		Args:  cmdutils.OrgRepoAndPullRequestNumber(),
+		Args:  cobra.MaximumNArgs(2),
 		Annotations: map[string]string{
 			cmdfactory.AnnotationHelpGroup: "pr",
 		},

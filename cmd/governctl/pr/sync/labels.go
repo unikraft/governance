@@ -34,7 +34,7 @@ func NewLabels() *cobra.Command {
 	cmd, err := cmdfactory.New(&Labels{}, cobra.Command{
 		Use:   "labels [OPTIONS] ORG/REPO/PRID",
 		Short: "Synchronise a pull request's labels",
-		Args:  cmdutils.OrgRepoAndPullRequestNumber(),
+		Args:  cobra.MaximumNArgs(2),
 		Annotations: map[string]string{
 			cmdfactory.AnnotationHelpGroup: "pr",
 		},

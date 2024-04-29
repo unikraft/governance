@@ -76,12 +76,7 @@ func main() {
 	ctx = kitcfg.WithConfigManager(ctx, cfgm)
 
 	// Attribute all configuration flags and command-line argument values
-	cmd, args, err := cmd.Find(os.Args[1:])
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	if err := cmdfactory.AttributeFlags(cmd, &cfg, args...); err != nil {
+	if err := cmdfactory.AttributeFlags(cmd, &cfg, os.Args[1:]...); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

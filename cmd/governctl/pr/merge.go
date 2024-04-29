@@ -64,7 +64,7 @@ func NewMerge() *cobra.Command {
 	cmd, err := cmdfactory.New(&Merge{}, cobra.Command{
 		Use:   "merge [OPTIONS] ORG/REPO/PRID",
 		Short: "Merge a pull request",
-		Args:  cmdutils.OrgRepoAndPullRequestNumber(),
+		Args:  cobra.MaximumNArgs(2),
 		Annotations: map[string]string{
 			cmdfactory.AnnotationHelpGroup: "pr",
 		},

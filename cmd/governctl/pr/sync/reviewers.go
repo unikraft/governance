@@ -42,7 +42,7 @@ func NewReviewers() *cobra.Command {
 	cmd, err := cmdfactory.New(&Reviewers{}, cobra.Command{
 		Use:   "reviewers [OPTIONS] ORG/REPO/PRID",
 		Short: "Synchronise a pull request's assignees (maintainers) and reviewers",
-		Args:  cmdutils.OrgRepoAndPullRequestNumber(),
+		Args:  cobra.MaximumNArgs(2),
 		Annotations: map[string]string{
 			cmdfactory.AnnotationHelpGroup: "pr",
 		},

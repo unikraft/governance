@@ -11,21 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/spf13/cobra"
-	"kraftkit.sh/cmdfactory"
 )
-
-// OrgRepoAndPullRequestNumber
-func OrgRepoAndPullRequestNumber() cobra.PositionalArgs {
-	return func(_ *cobra.Command, args []string) error {
-		if _, _, _, err := ParseOrgRepoAndPullRequestArgs(args); err != nil {
-			return cmdfactory.FlagErrorf("%w", err)
-		}
-
-		return nil
-	}
-}
 
 // ParseOrgRepoAndPullRequestArgs accepts input command-line arguments in the
 // following forms:
