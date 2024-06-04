@@ -8,12 +8,12 @@
 package checkpatch
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -76,7 +76,9 @@ func NewCheckpatch(ctx context.Context, file string, opts ...PatchOption) (*Patc
 	}
 
 	args := []string{
+		"--patch",
 		"--color=never",
+		"--root=" + filepath.Dir(filepath.Dir(filepath.Dir(patch.script))),
 	}
 
 	// Add options from the conf file in the PR
@@ -84,7 +86,9 @@ func NewCheckpatch(ctx context.Context, file string, opts ...PatchOption) (*Patc
 	if err != nil {
 		return nil, fmt.Errorf("could not read checkpatch configuration file: %w", err)
 	}
-	args = append(args, strings.Split(strings.TrimSpace(string(content)), "\n")...)
+	for _, line := range strings.Split(strings.TrimSpace(string(content)), "\n") {
+		args = append(args, strings.Split(line, " ")...)
+	}
 
 	// Extra ignores from the commits.
 	if len(patch.ignores) > 0 {
@@ -97,27 +101,20 @@ func NewCheckpatch(ctx context.Context, file string, opts ...PatchOption) (*Patc
 	args = append(args, file)
 
 	c := exec.Command(patch.script, args...)
+	c.Stderr = patch.stderr
 	c.Env = os.Environ()
 
 	log.G(ctx).Info(
 		strings.Join(append([]string{patch.script}, args...), " "),
 	)
 
-	var b bytes.Buffer
-	c.Stdout = &b
-	c.Stderr = patch.stderr
-
-	if err := c.Start(); err != nil {
-		return nil, fmt.Errorf("could not start checkpatch.pl: %w", err)
+	var out []byte
+	if out, err = c.Output(); err != nil && out == nil {
+		return nil, fmt.Errorf("running checkpatch.pl failed: %w", err)
 	}
 
-	// Checkpatch may return non-zero exit code, so we can safely ignore the
-	// returning error here.
-	_ = c.Wait()
-
 	var note *Note
-
-	for _, line := range strings.Split(strings.TrimSuffix(b.String(), "\n"), "\n") {
+	for _, line := range strings.Split(strings.TrimSuffix(string(out), "\n"), "\n") {
 		if warning := strings.TrimPrefix(line, "WARNING:"); len(warning) < len(line) {
 			split := strings.SplitN(warning, ":", 2)
 			if len(split) != 2 {
