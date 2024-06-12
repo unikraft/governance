@@ -1,0 +1,1063 @@
+- category: ANNOUNCEMENTS
+    - name: general-announce
+      emoji: 
+      description: null
+      type: text
+      private: false
+      archive: false
+
+    - name: git-announce
+      emoji: 
+      description: null
+      type: text
+      private: false
+      archive: false
+
+    - name: releases-announce
+      emoji: 
+      description: null
+      type: text
+      private: false
+      archive: false
+
+    - name: calendar-announce
+      emoji: 
+      description: null
+      type: text
+      private: false
+      archive: false
+
+- category: INFORMATION
+  private: false
+  channels:
+    - name: welcome
+      emoji: 👋
+      description: Let yourself be heard! Say hi!
+      type: text
+      private: false
+      archive: false
+
+    - name: forum
+      emoji: 💬
+      description: null
+      type: #todo
+      private: false
+      archive: false
+
+    - name: support
+      emoji: ❓
+      description: [FAQ](https://unikraft.org/docs/faq)
+      type: text
+      private: false
+      archive: false
+    
+    - name: docs
+      emoji: 📘
+      description: [Ideas and Issues](https://docs.google.com/document/d/1TFc7Pvu6_TdNkEOy3NS0E9sFOf_-ReMWbw-sQQ1_Zis/edit?usp=sharing) | [Proposed Website Layout](https://hackmd.io/fPKHILhSRuGkncs-n6Q8UQ)
+      type: text
+      private: false
+      archive: false
+
+    - name: news
+      emoji: 📰
+      description: Announcements and discussions about events
+      type: text
+      private: false
+      archive: false
+
+    - name: bot-commands
+      emoji: 🤖
+      description: null
+      type: text
+      private: false
+      archive: false
+
+    - name: roles
+      emoji: 🛗
+      description: Welcome to the Unikraft Discord! Please select relevant roles below to unlock additional channels.
+      type: text
+      private: false
+      archive: false
+
+    - name: meta
+      emoji: 👾
+      description: Meta channel to discuss the Unikraft OSS Discord server.\n\nCreation/deletion/renaming of channels, bot issues/suggestions, etc.\n\nPlease try to keep on topic in this channel. The less off-topic chat that happens here the better this meta channel will work.
+      type: text
+      private: false
+      archive: false
+
+    - name: research
+      emoji: 🔬
+      description: null
+      type: text
+      private: false
+      archive: false
+
+- category: UNIKRAFT GENERAL
+  private: false
+  channels:
+      - name: general
+      emoji: 💬
+      description: [Docs](https://unikraft.org/) | [CLI Reference](https://unikraft.org/docs/cli) | [GitHub](https://github.com/unikraft) | [Twitter](https://x.com/UnikraftSDK) | [Calendar](https://unikraft.org/community/events) | [Examples](https://github.com/unikraft/catalog)
+      type: text
+      private: false
+      archive: false
+
+      - name: random
+      emoji: 🐒
+      description: null
+      type: text
+      private: false
+      archive: false
+
+      - name: reviewers
+      emoji: 👀
+      description: null
+      type: text
+      private: true
+      archive: false
+      roles:
+        - reviewer
+
+      - name: contributors
+      emoji: 🔂
+      description: null
+      type: text
+      private: true
+      archive: false
+      roles:
+        - contributor
+
+- category: KRAFTCLOUD
+  private: false
+  channels:
+      - name: kraftcloud
+      emoji: 💬
+      description: [KraftCloud](http://kraft.cloud/) | [Docs](https://docs.kraft.cloud/) | [Examples](https://github.com/kraftcloud/examples)
+      type: text
+      private: false
+      archive: false
+
+- category: GENERAL VOICE CHANNELS
+  private: false
+  channels:
+      - name: presentations
+      emoji: 🎤
+      description: null
+      type: voice
+      private: false
+      archive: false
+
+      - name: contributors-voice
+      emoji: 🔂
+      description: null
+      type: voice
+      private: true
+      archive: false
+      roles:
+        - contributor
+
+      - name: reviewers-voice
+      emoji: 👀
+      description: null
+      type: voice
+      private: true
+      archive: false
+      roles:
+        - reviewer
+
+      - name: monkey-buisness
+      emoji: 🐒
+      description: null
+      type: voice
+      private: false
+      archive: false
+
+- category: UNIVERSITY & MENTORING
+  private: false
+  channels:
+      - name: upb-en
+      emoji: 🇷🇴
+      description: UPB student & faculty private channel
+      type: text
+      private: true
+      archive: false
+      roles:
+        - uni-upb
+
+      - name: upb-ro
+      emoji: 🇷🇴
+      description: UPB canal privat pentru studenți și facultăți
+      type: text
+      private: true
+      archive: false
+      roles:
+        - uni-upb
+
+      - name: gsoc
+      emoji: 🌞
+      description: Google Summer of Code - Q&A - General & Topic Discussions. [Learn more](https://github.com/unikraft/gsoc).
+      type: text
+      private: false
+      archive: false
+
+      - name: gsoc23-mentees
+      emoji: 🌞
+      description: GSoC23 Mentees: https://github.com/unikraft/meeting-notes/tree/staging/discussions/gsoc
+      type: text
+      private: true
+      archive: false
+      roles:
+        - gsoc23
+        - gosc-mentor
+
+      - name: rd-mentoring
+      emoji: 👶
+      description: null
+      type: text
+      private: true
+      archive: false
+      roles:
+        # - TODO find which role gives access (i guess uni-upb or student)
+
+- category: EVENTS
+  private: false
+  channels:
+    - name: fosdem23
+      emoji: 🍻
+      description: https://drive.google.com/drive/folders/1dqm-ioJQA4lUGpGWZU8UNJqLujilawkP?usp=share_link
+      type: text
+      private: false
+      archive: false
+      
+      - name: gathering23
+      emoji: 🍻
+      description: https://drive.google.com/drive/folders/1qWL3QTivlGoDKsk3_r87jN5Ttxp7Ju_v
+      type: text
+      private: true
+      archive: false
+      roles:
+        # TODO roles that give access
+      members:
+        # TODO members that have access
+
+      - name: fosdem24
+      emoji: 🍻
+      description: https://drive.google.com/drive/folders/1MtJUJq2glebWsRR2OhGMbrFiY2kLKMSM?usp=sharing
+      type: text
+      private: false
+      archive: false
+
+- category: Hackathons
+  private: false
+  channels:
+  - name: hack-general
+    emoji: 🔨
+    description: null
+    type: text
+    private: false
+    archive: false
+
+  - name: hack-athens23
+    emoji: 🏛️
+    description: Unikraft Athens Hackathon 2023
+    type: text
+    private: false
+    archive: false
+
+  - name: hack-amsterdam23
+    emoji: 🇳🇱
+    description: https://unikraft.org/community/hackathons/2023-04-amsterdam/, Unikraft Amsterdam Hackathon 2023
+    type: text
+    private: false
+    archive: false
+
+  - name: hack-porto23
+    emoji: 🇵🇹
+    description: Unikraft Porto Hackathon 2023
+    type: text
+    private: false
+    archive: false
+
+  - name: usoc23
+    emoji: 🐒
+    description: https://unikraft.org/community/hackathons/usoc23/
+    type: text
+    private: false
+    archive: false
+
+  - name: hack-vancouver23
+    emoji: 🍁
+    description: https://unikraft.org/hackathons/2023-09-vancouver
+    type: text
+    private: false
+    archive: false
+
+  - name: hack-aveiro23
+    emoji: 🍷
+    description: https://unikraft.org/hackathons/2023-09-aveiro
+    type: text
+    private: false
+    archive: false
+
+  - name: hacktoberfest-2023
+    emoji: 🔧
+    description: null
+    type: text
+    private: false
+    archive: false
+
+  - name: hack-voice
+    emoji: 🎙️
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+- category: HACKATHON TEAMS
+  private: false
+  channels:
+    - name: hack-team-01-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+    - name: hack-team-02-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+    - name: hack-team-03-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+    - name: hack-team-04-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+    - name: hack-team-05-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+    - name: hack-team-06-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+    - name: hack-team-07-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+    - name: hack-team-08-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+    - name: hack-team-09-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+    - name: hack-team-10-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+    - name: hack-team-11-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+    - name: hack-team-12-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+    - name: hack-team-13-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+    - name: hack-team-14-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+    - name: hack-team-15-voice
+    emoji: null
+    description: null
+    type: voice
+    private: false
+    archive: false
+
+- category: PROJECTS
+  private: false
+  channels:
+    - name: baremetal-support 
+    emoji: 💽
+    description: https://github.com/unikraft/meeting-notes/blob/staging/discussions/baremetal/2023-08-09.md, https://hackmd.io/@unikraft/rkZG9EfTh/edit
+    type: text
+    private: false
+    archive: false
+
+    - name: app-compat
+    emoji: 📥
+    description: (Binary) Application Compatibility: https://github.com/orgs/unikraft/projects/31/
+    type: text
+    private: false
+    archive: false
+
+    - name: infrastructure
+    emoji: 🏗️
+    description: Unikraft OSS infrastructure
+    type: text
+    private: true
+    archive: false
+    roles:
+      - infra
+      # - TODO find more roles that give permission
+
+    - name: driver-support
+    emoji: ⚙️
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: memory
+    emoji: 💾
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: security
+    emoji: 🔒
+    description: Security in Unikraft: https://github.com/orgs/unikraft/projects/32
+    type: text
+    private: false
+    archive: false
+
+    - name: plat-re-arch
+    emoji: 🚂
+    description: Platform / Source Code Re-architecting: https://github.com/orgs/unikraft/projects/36
+    type: text
+    private: false
+    archive: false
+
+    - name: bench-prof
+    emoji: 📈
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: smp-support
+    emoji: 🤹
+    description: SMP / Synchronization: https://github.com/orgs/unikraft/projects/21
+    type: text
+    private: false
+    archive: false
+
+    - name: booting
+    emoji: 🥾
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: isr
+    emoji: ⚡
+    description: Interrupt Service Routine (ISR) Discussion Channel
+    type: text
+    private: false
+    archive: false
+
+    - name: build-system
+    emoji: 🛠️
+    description: The Unikraft Build System
+    type: text
+    private: false
+    archive: false
+
+    - name: ai
+    emoji: 🤖
+    description: Artificial Intelligence use cases for Unikraft
+    type: text
+    private: false
+    archive: false
+
+- category: TOOLS & INTEGRATIONS
+  private: false
+  channels:
+    - name: ide-vscode
+    emoji: 💻
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: kraftkit
+    emoji: 🚀
+    description: [GitHub](https://github.com/unikraft/kraftkit) | [Open Issues](https://github.com/unikraft/kraftkit/issues) | [CLI Reference](https://unikraft.org/docs/cli)
+    type: text
+    private: false
+    archive: false
+
+    - name: kubernetes
+    emoji: ⚙️
+    description: null
+    type: text
+    private: false
+    archive: false
+
+- category: APPLICATIONS
+  private: false
+  channels:
+    - name: app-nginx
+    emoji: 📦
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: app-helloworld-go
+    emoji: 📦
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: app-flask
+    emoji: 🌶️
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: app-helloworld-cpp
+    emoji: 📦
+    description: https://github.com/unikraft/app-helloworld-cpp/
+    type: text
+    private: false
+    archive: false
+
+    - name: app-httpreply
+    emoji: 📦
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: app-lua
+    emoji: 📦
+    description: https://github.com/unikraft/app-lua
+    type: text
+    private: false
+    archive: false
+
+- category: EXTERNAL LIBRARIES
+  private: false
+  channels:
+    - name: lib-lwip 
+    emoji: 📚
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: lib-newlib
+    emoji: 📚
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: lib-gcc
+    emoji: 📚
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: lib-v8
+    emoji: 📚
+    description: Port of v8 JavaScript Engine on Unikraft
+    type: text
+    private: false
+    archive: false
+
+    - name: lib-musl
+    emoji: 📚
+    description: https://github.com/unikraft/lib-musl, https://hackmd.io/@unikraft/S1o2lt1zs/edit
+    type: text
+    private: false
+    archive: false
+
+    - name: lib-redis
+    emoji: 📚
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: lib-python3
+    emoji: 📚
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: lib-sqlite
+    emoji: 📚
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: lib-boost
+    emoji: 📚
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: lib-pytorch
+    emoji: 📚
+    description: null
+    type: text
+    private: false
+    archive: false
+
+- category: INTERNAL LIBRARIES
+  private: false
+  channels:
+    - name: posix-libdl
+    emoji: 🧩
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: posix-socket
+    emoji: 🧩
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: posix-process
+    emoji: 🧩
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: posix-sysinfo
+    emoji: 🧩
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: posix-user
+    emoji: 🧩
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: syscall-shim
+    emoji: 🧀
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: ukalloc
+    emoji: 📝
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: ukdebug
+    emoji: 🐞
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: uktest
+    emoji: 🧪
+    description: Unikraft's Internal Unit Testing Framework!
+    type: text
+    private: false
+    archive: false
+
+    - name: vfscore
+    emoji: 🗃
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: uksched
+    emoji: ⏱
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: nolibc
+    emoji: 🚫
+    description: https://github.com/unikraft/unikraft/blob/staging/lib/nolibc/README.md
+    type: text
+    private: false
+    archive: false
+
+    - name: ukstore
+    emoji: 🗃
+    description: null
+    type: text
+    private: false
+    archive: false
+
+- category: PLATFORMS
+  private: false
+  channels:
+    - name: vmm-general
+    emoji: 🚂
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: plat-kvm
+    emoji: 🚂
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: plat-xen
+    emoji: 🚂
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: plat-linuxu
+    emoji: 🚂
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: plat-hyperv
+    emoji: 🚂
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: plat-vmware
+    emoji: 🚂
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: plat-firecracker
+    emoji: 🚂
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: plat-raspi
+    emoji: 🚂
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: plat-sel4
+    emoji: 🚂
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: palt-darwin
+    emoji: 🍎
+    description: Build and run Unikraft on a Mac!
+    type: text
+    private: false
+    archive: false
+
+    - name: plat-aws
+    emoji: ☁️
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: palt-gcp
+    emoji: ☁️
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: palt-digitalocean
+    emoji: ☁️
+    description: null
+    type: text
+    private: false
+    archive: false
+
+- category: ARCHITECTURES
+  private: false
+  channels:
+    - name: x86_64
+    emoji: 💡
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: arm
+    emoji: 💡
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: riscv
+    emoji: 💡
+    description: Trying to run Unikraft on RISCV!
+    type: text
+    private: false
+    archive: false
+
+- category: RUNTIMES
+  private: false
+  channels:
+  - name: wasm
+    emoji: 🟪
+    description: WebAssembly
+    type: text
+    private: false
+    archive: false
+  
+  - name: python3
+    emoji: 🐍
+    description: null
+    type: text
+    private: false
+    archive: false
+  
+  - name: rust
+    emoji: 🦀
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: dlang
+    emoji: 🎨
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: go
+    emoji: 🚅
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: javascript
+    emoji: 🟨
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: cxx
+    emoji: ➕
+    description: null
+    type: text
+    private: false
+    archive: false
+
+    - name: ruby
+    emoji: ♢
+    description: null
+    type: text
+    private: false
+    archive: false
+
+- category: ARCHIVED
+  private: false
+  channels:
+  - name: hack-munich22
+    emoji: 🥨
+    description: Unikraft Munich Hackathon 2022! [Main discussion channel]
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-aachen22
+    emoji: 🇩🇪
+    description: Unikraft Aachen (2022) Hackathon!
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-lyon22
+    emoji: 🇫🇷
+    description: Unikraft France Hackathon
+    type: text
+    private: false
+    archive: true
+
+  - name: pykraft
+    emoji: 🚀
+    description: null
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-lyon22-team-01
+    emoji: null
+    description: null
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-lyon22-team-02
+    emoji: null
+    description: null
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-lyon22-team-03
+    emoji: null
+    description: null
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-lyon22-team-04
+    emoji: null
+    description: null
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-lyon22-team-05
+    emoji: null
+    description: null
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-lyon22-team-06
+    emoji: null
+    description: null
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-lyon22-team-07
+    emoji: null
+    description: null
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-lyon22-team-08
+    emoji: null
+    description: null
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-lyon22-team-09
+    emoji: null
+    description: null
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-lyon22-team-10
+    emoji: null
+    description: null
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-lyon22-team-11
+    emoji: null
+    description: null
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-lyon22-team-12
+    emoji: null
+    description: null
+    type: text
+    private: false
+    archive: true
+
+  - name: hack-lyon22-team-13
+    emoji: null
+    description: null
+    type: text
+    private: false
+    archive: true
+
+  - name: asplos-support
+    emoji: 👶
+    description: null
+    type: text
+    private: false
+    archive: true
+
