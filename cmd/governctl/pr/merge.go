@@ -76,7 +76,7 @@ func NewMerge() *cobra.Command {
 	return cmd
 }
 
-func (opts *Merge) Run(ctx context.Context, args []string) error {
+func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 	ghOrg, ghRepo, ghPrId, err := cmdutils.ParseOrgRepoAndPullRequestArgs(args)
 	if err != nil {
 		return err
@@ -277,13 +277,18 @@ func (opts *Merge) Run(ctx context.Context, args []string) error {
 		}
 
 		defer func() {
+			if ferr != nil {
+				log.G(ctx).Warn("errors detected, refusing to delete remote branch")
+				return
+			}
+
 			// Delete remote "<base>-PRID" branch at the end
 			// Use git and run: git push -d <remote_name> <branchname>
 			cmd = exec.Command("git", "-C", opts.Repo, "push", "-d", "patched", tempBranch)
 			cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
 			cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 			if err := cmd.Run(); err != nil {
-				fmt.Printf("%s\n", fmt.Errorf("could not delete remote branch %s: %w", tempBranch, err))
+				log.G(ctx).Error(fmt.Sprintf("%s\n", fmt.Errorf("could not delete remote branch %s: %w", tempBranch, err)))
 			}
 		}()
 
