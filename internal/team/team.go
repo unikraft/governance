@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"strings"
 
-	gh "github.com/google/go-github/v32/github"
+	gh "github.com/google/go-github/v63/github"
 	"github.com/unikraft/governance/internal/ghapi"
 	"github.com/unikraft/governance/internal/repo"
 	"github.com/unikraft/governance/internal/user"

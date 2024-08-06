@@ -20,7 +20,7 @@ import (
 	gitplumbing "github.com/go-git/go-git/v5/plumbing"
 	gitobject "github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
-	"github.com/google/go-github/v32/github"
+	"github.com/google/go-github/v63/github"
 	"github.com/sirupsen/logrus"
 	kitcfg "kraftkit.sh/config"
 	"kraftkit.sh/log"
