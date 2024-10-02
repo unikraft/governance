@@ -132,7 +132,7 @@ func (p *Patch) message() *bytes.Buffer {
 
 	b.WriteString("From ")
 	b.WriteString(p.Hash)
-	b.WriteString("\n")
+	b.WriteString(" Mon Sep 17 00:00:00 2001\n")
 	b.WriteString("From: ")
 	b.WriteString(p.AuthorName)
 	b.WriteString(" <")
@@ -152,7 +152,7 @@ func (p *Patch) message() *bytes.Buffer {
 	b.WriteString("\n")
 	b.WriteString(p.Diff)
 	// TODO(nderjung): Set this version dynamically. How much does it matter?
-	b.WriteString("-- \n2.39.2\n\n")
+	b.WriteString("-- \n2.43.0\n\n")
 
 	return &b
 }
