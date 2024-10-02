@@ -66,7 +66,7 @@ func NewPatch() *cobra.Command {
 }
 
 func (opts *Patch) Run(ctx context.Context, args []string) error {
-	var extraIgnores []string
+	var extraIgnores = []string{"UNKNOWN_COMMIT_ID"}
 
 	ghOrg, ghRepo, ghPrId, err := cmdutils.ParseOrgRepoAndPullRequestArgs(args)
 	if err != nil {
