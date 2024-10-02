@@ -204,8 +204,8 @@ func (opts *Patch) Run(ctx context.Context, args []string) error {
 
 			// Set an annotations on the PR if run in a GitHub Actions context.
 			// See: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-error-message
-			if os.Getenv("GITHUB_ACTIONS") == "true" && len(note.File) > 0 && note.Line > 0 {
-				fmt.Printf("::%s file=%s,line=%d,title=%s::%s\n",
+			if os.Getenv("GITHUB_ACTIONS") == "true" {
+				fmt.Printf("::%s file='%s',line='%d',title='%s'::%s\n",
 					note.Level,
 					note.File,
 					note.Line,
