@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"unicode"
 
@@ -267,6 +268,8 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 	}
 
 	var token string
+	var closeableIssues []string
+	regex := regexp.MustCompile(`(Closes|Fixes|Resolves): #[0-9]+`)
 	if !kitcfg.G[config.Config](ctx).DryRun {
 		// Push "<base>-PRID" branch to given repo
 		cmd = exec.Command("git", "-C", opts.Repo, "push", "-u", "patched", tempBranch)
@@ -320,6 +323,22 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 			}
 		}
 
+		// Save PR body
+		cmd = exec.Command("gh", "pr", "view", fmt.Sprintf("%d", ghPrId),
+			"-R", fmt.Sprintf("%s/%s", ghOrg, ghRepo),
+		)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+		var prBody []byte
+		if prBody, err = cmd.Output(); err != nil {
+			return fmt.Errorf("could not get PR body: %w", err)
+		}
+
+		matches := regex.FindAll(prBody, -1)
+		for _, match := range matches {
+			closeableIssues = append(closeableIssues, strings.Split(string(match), "#")[1])
+		}
+
 		// Change PR base branch to "<base>-PRID"
 		// Use gh and run: gh pr edit <PRID> --base <base-PRID>
 		cmd = exec.Command("gh", "pr", "edit", fmt.Sprintf("%d", ghPrId), "--base", tempBranch, "-R", fmt.Sprintf("%s/%s", ghOrg, ghRepo))
@@ -353,6 +372,11 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 
 	for i, patch := range pull.Patches() {
 		invertedPatches[len(pull.Patches())-1-i] = patch
+
+		matches := regex.FindAllString(patch.Message, -1)
+		for _, match := range matches {
+			closeableIssues = append(closeableIssues, strings.Split(match, "#")[1])
+		}
 	}
 
 	for _, patch := range invertedPatches {
@@ -402,6 +426,22 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("could not change label from 'merge' to 'ci/merged': %w", err)
+		}
+
+		// Close related issues
+		log.G(ctx).Info("closing related issues")
+		for _, issue := range closeableIssues {
+			cmd = exec.Command("gh", "issue", "close", issue,
+				"--reason", "completed",
+				"--comment", "This issue was closed by PR number "+fmt.Sprintf("#%d", ghPrId)+" which was merged successfully.",
+				"-R", fmt.Sprintf("%s/%s", ghOrg, ghRepo),
+			)
+			cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+			cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+			if err := cmd.Run(); err != nil {
+				return fmt.Errorf("could not close issue %s: %w", issue, err)
+			}
+			log.G(ctx).Info("closed " + issue)
 		}
 	}
 
