@@ -425,7 +425,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("could not change label from 'merge' to 'ci/merged': %w", err)
+			log.G(ctx).Errorf("could not change label from 'merge' to 'ci/merged': %s", err)
 		}
 
 		// Close related issues
@@ -439,7 +439,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 			cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
 			cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 			if err := cmd.Run(); err != nil {
-				return fmt.Errorf("could not close issue %s: %w", issue, err)
+				log.G(ctx).Errorf("could not close issue %s: %s", issue, err)
 			}
 			log.G(ctx).Info("closed " + issue)
 		}
@@ -453,7 +453,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		cmd.Stdin = bytes.NewReader([]byte(token))
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("could not update token: %w", err)
+			log.G(ctx).Errorf("could not update token: %s", err)
 		}
 	}
 
