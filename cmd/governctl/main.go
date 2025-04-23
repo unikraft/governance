@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/MakeNowJust/heredoc"
-	"github.com/rancher/wrangler/pkg/signals"
+	heredoc "github.com/MakeNowJust/heredoc/v2"
+	"github.com/rancher/wrangler/v3/pkg/signals"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"

@@ -10,7 +10,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/bmatcuk/doublestar"
+	doublestar "github.com/bmatcuk/doublestar/v4"
 	"github.com/unikraft/governance/internal/ghapi"
 	"gopkg.in/yaml.v2"
 )

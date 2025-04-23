@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/MakeNowJust/heredoc"
+	heredoc "github.com/MakeNowJust/heredoc/v2"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"kraftkit.sh/cmdfactory"

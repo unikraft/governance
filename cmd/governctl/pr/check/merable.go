@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/MakeNowJust/heredoc"
+	heredoc "github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 	"kraftkit.sh/cmdfactory"
 	kitcfg "kraftkit.sh/config"
