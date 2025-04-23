@@ -211,9 +211,12 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 		}
 	}
 
+	// cmd is used to run commands
+	var cmd *exec.Cmd
+
 	// Add commiter name
 	if opts.CommitterName != "" {
-		cmd := exec.Command("git", "-C", opts.Repo, "config", "user.name", opts.CommitterName)
+		cmd = exec.Command("git", "-C", opts.Repo, "config", "user.name", opts.CommitterName)
 		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
@@ -223,7 +226,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 
 	// Add commiter email
 	if opts.CommitterEmail != "" {
-		cmd := exec.Command("git", "-C", opts.Repo, "config", "user.email", opts.CommitterEmail)
+		cmd = exec.Command("git", "-C", opts.Repo, "config", "user.email", opts.CommitterEmail)
 		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
@@ -233,7 +236,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 
 	// Create "<base>-PRID" branch and push it to remote
 	// Checkout "<base>" branch
-	cmd := exec.Command("git", "-C", opts.Repo, "checkout", opts.BaseBranch)
+	cmd = exec.Command("git", "-C", opts.Repo, "checkout", opts.BaseBranch)
 	cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 	cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 	if err := cmd.Run(); err != nil {
@@ -396,7 +399,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 		// truncated messages. This is fine for now.
 		patch.Message = strings.ReplaceAll(patch.Message, "---", "...")
 
-		cmd := exec.Command("git", "-C", opts.Repo, "am", "--3way")
+		cmd = exec.Command("git", "-C", opts.Repo, "am", "--3way")
 		cmd.Stdin = bytes.NewReader(patch.Bytes())
 		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
