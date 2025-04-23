@@ -214,7 +214,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 	// Add commiter name
 	if opts.CommitterName != "" {
 		cmd := exec.Command("git", "-C", opts.Repo, "config", "user.name", opts.CommitterName)
-		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("could not config user: %w", err)
@@ -224,7 +224,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 	// Add commiter email
 	if opts.CommitterEmail != "" {
 		cmd := exec.Command("git", "-C", opts.Repo, "config", "user.email", opts.CommitterEmail)
-		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("could not config email: %w", err)
@@ -234,7 +234,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 	// Create "<base>-PRID" branch and push it to remote
 	// Checkout "<base>" branch
 	cmd := exec.Command("git", "-C", opts.Repo, "checkout", opts.BaseBranch)
-	cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+	cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 	cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("could not checkout base: %w", err)
@@ -245,7 +245,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 
 	// Create "<base>-PRID" branch
 	cmd = exec.Command("git", "-C", opts.Repo, "checkout", "-b", tempBranch)
-	cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+	cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 	cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("could not checkout base: %w", err)
@@ -262,7 +262,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 			ghOrg,
 			ghRepo,
 		))
-	cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+	cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 	cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("could not apply patch: %w", err)
@@ -274,7 +274,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 	if !kitcfg.G[config.Config](ctx).DryRun {
 		// Push "<base>-PRID" branch to given repo
 		cmd = exec.Command("git", "-C", opts.Repo, "push", "-u", "patched", tempBranch)
-		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("could not create remote branch %s: %w", tempBranch, err)
@@ -293,7 +293,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 			// Delete remote "<base>-PRID" branch at the end
 			// Use git and run: git push -d <remote_name> <branchname>
 			cmd = exec.Command("git", "-C", opts.Repo, "push", "-d", "patched", tempBranch)
-			cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+			cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 			cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 			if err := cmd.Run(); err != nil {
 				log.G(ctx).Error(fmt.Sprintf("%s\n", fmt.Errorf("could not delete remote branch %s: %w", tempBranch, err)))
@@ -304,7 +304,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 		// Use gh and run: gh auth token
 		var output []byte
 		cmd = exec.Command("gh", "auth", "token")
-		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 		if output, err = cmd.Output(); err != nil {
 			log.G(ctx).Warn("no token to back up, skipping")
 			token = ""
@@ -319,7 +319,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 		// Login with given token
 		// Use gh and run: gh auth login --with-token < <token>
 		cmd = exec.Command("gh", "auth", "login", "--with-token")
-		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		cmd.Stdin = bytes.NewReader([]byte(kitcfg.G[config.Config](ctx).GithubToken))
 		if err := cmd.Run(); err != nil {
@@ -332,7 +332,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 		cmd = exec.Command("gh", "pr", "view", fmt.Sprintf("%d", ghPrId),
 			"-R", fmt.Sprintf("%s/%s", ghOrg, ghRepo),
 		)
-		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		var prBody []byte
 		if prBody, err = cmd.Output(); err != nil {
@@ -347,7 +347,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 		// Change PR base branch to "<base>-PRID"
 		// Use gh and run: gh pr edit <PRID> --base <base-PRID>
 		cmd = exec.Command("gh", "pr", "edit", fmt.Sprintf("%d", ghPrId), "--base", tempBranch, "-R", fmt.Sprintf("%s/%s", ghOrg, ghRepo))
-		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("could not change base branch to %s: %w", tempBranch, err)
@@ -356,7 +356,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 		// Rebase & Merge PR on top of "<base>-PRID"
 		// Use gh and run: gh pr merge <PRID> --rebase --delete-branch
 		cmd = exec.Command("gh", "pr", "merge", fmt.Sprintf("%d", ghPrId), "--rebase", "-R", fmt.Sprintf("%s/%s", ghOrg, ghRepo))
-		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("could not merge with rebase into %s: %w", tempBranch, err)
@@ -365,7 +365,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 
 	// Move back to "<base>" branch
 	cmd = exec.Command("git", "-C", opts.Repo, "checkout", opts.BaseBranch)
-	cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+	cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 	cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("could not checkout base: %w", err)
@@ -398,7 +398,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 
 		cmd := exec.Command("git", "-C", opts.Repo, "am", "--3way")
 		cmd.Stdin = bytes.NewReader(patch.Bytes())
-		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("could not apply patch: %w", err)
@@ -414,7 +414,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 			"push", "-u", "patched",
 			opts.BaseBranch,
 		)
-		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("could not apply patch: %w", err)
@@ -443,7 +443,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 				"--comment", "This issue was closed by PR number "+fmt.Sprintf("#%d", ghPrId)+" which was merged successfully.",
 				"-R", fmt.Sprintf("%s/%s", ghOrg, ghRepo),
 			)
-			cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+			cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 			cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 			if err := cmd.Run(); err != nil {
 				log.G(ctx).Errorf("could not close issue %s: %s", issue, err)
@@ -456,7 +456,7 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 		// Replace token with the original one
 		// Use gh and run: gh auth login --with-token < <token>
 		cmd = exec.Command("gh", "auth", "login", "--with-token")
-		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
+		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
 		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		cmd.Stdin = bytes.NewReader([]byte(token))
 		if err := cmd.Run(); err != nil {
