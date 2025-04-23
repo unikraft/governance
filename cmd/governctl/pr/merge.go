@@ -336,7 +336,6 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 			"-R", fmt.Sprintf("%s/%s", ghOrg, ghRepo),
 		)
 		cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
-		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
 		var prBody []byte
 		if prBody, err = cmd.Output(); err != nil {
 			return fmt.Errorf("could not get PR body: %w", err)
