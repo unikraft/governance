@@ -282,6 +282,10 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 		defer func() {
 			if ferr != nil {
 				log.G(ctx).Warn("errors detected, refusing to delete remote branch")
+				log.G(ctx).Warn("if this is incorrect, please delete the remote branch manually")
+				log.G(ctx).Warn("```")
+				log.G(ctx).Warn("git push -d patched " + tempBranch)
+				log.G(ctx).Warn("```")
 				return
 			}
 
