@@ -107,12 +107,8 @@ $(.PROXY)$(BIN):
 
 .PHONY: container
 container: TARGET ?= build
-container: GOLANG_VERSION ?= 1.21
-ifeq ($(TARGET),devenv)
+container: GOLANG_VERSION ?= 1.24
 container: TAG ?= devenv
-else
-container: TAG ?= latest
-endif
 container: IMAGE ?= $(REG)/$(ORG)/$(REPO):$(TAG)
 container:
 	$(DOCKER) build \
