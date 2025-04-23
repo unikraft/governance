@@ -29,7 +29,6 @@ jobs:
           goreleaser release \
             --config .goreleaser.yml \
             --clean \
-            --rm-dist \
-            --skip-validate
+            --skip=validate
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
