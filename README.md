@@ -8,7 +8,7 @@ Shipped in this repository is the program `governctl` which is intended to be us
 
 ### Download & Installation
 
-For pre-built binaries, check out the [releases page](https://github.com/unikraft/kraftkit/releases/latest).
+For pre-built binaries, check out the [releases page](https://github.com/unikraft/governance/releases/latest).
 
 ### Building from source
 
