@@ -46,6 +46,7 @@ type Merge struct {
 	Labels             []string `long:"labels" env:"GOVERN_LABELS" usage:"The PR must have these labels to be considered mergable"`
 	MinApprovals       int      `long:"min-approvals" env:"GOVERN_MIN_APPROVALS" usage:"Minimum number of approvals required to be considered mergable" default:"1"`
 	MinReviews         int      `long:"min-reviews" env:"GOVERN_MIN_REVIEWS" usage:"Minimum number of reviews a PR requires to be considered mergable" default:"1"`
+	NoAutoMergeLabel   bool     `long:"no-auto-merge-label" env:"GOVERN_NO_AUTO_MERGE_LABEL" usage:"Do not check and replace 'merge' label with 'ci/merged'"`
 	NoAutoTrailerPatch bool     `long:"no-auto-trailer-patch" env:"GOVERN_NO_AUTO_TRAILE" usage:"Do not apply inferred trailers from mergability check to each commit"`
 	NoCheckMergable    bool     `long:"no-check-mergable" env:"GOVERN_NO_CHECK_MERGABLE" usage:"Do not run a check to test whether the PR meets merge conditions"`
 	NoConflicts        bool     `long:"no-conflicts" env:"GOVERN_NO_CONFLICTS" usage:"Pull request must not have any conflicts"`
@@ -420,16 +421,18 @@ func (opts *Merge) Run(ctx context.Context, args []string) (ferr error) {
 		}
 
 		// Remove 'merge' label from PR and add 'ci/merged' label
-		log.G(ctx).Info("removing 'merge' label and adding 'ci/merged' label")
-		cmd = exec.Command("gh", "pr", "edit", fmt.Sprintf("%d", ghPrId),
-			"--remove-label", "merge",
-			"--add-label", "ci/merged",
-			"-R", fmt.Sprintf("%s/%s", ghOrg, ghRepo),
-		)
-		cmd.Stderr = log.G(ctx).WriterLevel(logrus.ErrorLevel)
-		cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
-		if err := cmd.Run(); err != nil {
-			log.G(ctx).Errorf("could not change label from 'merge' to 'ci/merged': %s", err)
+		if !opts.NoAutoMergeLabel {
+			log.G(ctx).Info("removing 'merge' label and adding 'ci/merged' label")
+			cmd = exec.Command("gh", "pr", "edit", fmt.Sprintf("%d", ghPrId),
+				"--remove-label", "merge",
+				"--add-label", "ci/merged",
+				"-R", fmt.Sprintf("%s/%s", ghOrg, ghRepo),
+			)
+			cmd.Stderr = log.G(ctx).WriterLevel(logrus.InfoLevel)
+			cmd.Stdout = log.G(ctx).WriterLevel(logrus.DebugLevel)
+			if err := cmd.Run(); err != nil {
+				log.G(ctx).Errorf("could not change label from 'merge' to 'ci/merged': %s", err)
+			}
 		}
 
 		// Close related issues
